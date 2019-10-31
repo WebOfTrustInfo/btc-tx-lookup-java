@@ -120,7 +120,7 @@ public class BitcoindRPCBitcoinConnection extends AbstractBitcoinConnection impl
 				Matcher matcher = patternAsmInputScriptPubKey.matcher((String) in.scriptSig().get("asm"));
 
 				if (log.isDebugEnabled()) log.debug("IN: " + in.scriptSig().get("asm") + " (MATCHES: " + matcher.matches() + ")");
-				
+
 				if (matcher.matches() && matcher.groupCount() == 1) {
 
 					if (log.isDebugEnabled()) log.debug("inputScriptPubKey: " + matcher.group(1));
@@ -165,9 +165,13 @@ public class BitcoindRPCBitcoinConnection extends AbstractBitcoinConnection impl
 			}
 		}
 
+		// find transaction lock time
+
+		long transactionLockTime = rawTransaction.lockTime();
+
 		// done
 
-		return new DidBtcrData(null, inputScriptPubKey, continuationUri);
+		return new DidBtcrData(null, inputScriptPubKey, continuationUri, transactionLockTime);
 	}
 
 	/*

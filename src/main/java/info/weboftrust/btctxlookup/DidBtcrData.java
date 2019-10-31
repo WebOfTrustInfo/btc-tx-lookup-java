@@ -7,12 +7,14 @@ public class DidBtcrData {
 	private final ChainAndTxid spentInChainAndTxid;
 	private final String inputScriptPubKey;
 	private final URI continuationUri;
+	private final long transactionTime;
 
-	public DidBtcrData(ChainAndTxid spentInChainAndTxid, String inputScriptPubKey, URI continuationUri) { 
+	public DidBtcrData(ChainAndTxid spentInChainAndTxid, String inputScriptPubKey, URI continuationUri, long transactionTime) {
 
 		this.spentInChainAndTxid = spentInChainAndTxid;
 		this.inputScriptPubKey = inputScriptPubKey;
 		this.continuationUri = continuationUri;
+		this.transactionTime = transactionTime;
 	}
 
 	public ChainAndTxid getSpentInChainAndTxid() {
@@ -30,14 +32,19 @@ public class DidBtcrData {
 		return this.continuationUri;
 	}
 
+	public long getTransactionTime() {
+
+		return this.transactionTime;
+	}
+
 	/*
 	 * Object methods
 	 */
 
 	@Override
 	public String toString() {
-		return "BtcrData [spentInChainAndTxid=" + spentInChainAndTxid + ", inputScriptPubKey=" + inputScriptPubKey
-				+ ", continuationUri=" + continuationUri + "]";
+		return "DidBtcrData [spentInChainAndTxid=" + spentInChainAndTxid + ", inputScriptPubKey=" + inputScriptPubKey
+				+ ", continuationUri=" + continuationUri + ", transactionTime=" + transactionTime + "]";
 	}
 
 	@Override
@@ -47,6 +54,7 @@ public class DidBtcrData {
 		result = prime * result + ((continuationUri == null) ? 0 : continuationUri.hashCode());
 		result = prime * result + ((inputScriptPubKey == null) ? 0 : inputScriptPubKey.hashCode());
 		result = prime * result + ((spentInChainAndTxid == null) ? 0 : spentInChainAndTxid.hashCode());
+		result = prime * result + (int) (transactionTime ^ (transactionTime >>> 32));
 		return result;
 	}
 
@@ -73,6 +81,8 @@ public class DidBtcrData {
 			if (other.spentInChainAndTxid != null)
 				return false;
 		} else if (!spentInChainAndTxid.equals(other.spentInChainAndTxid))
+			return false;
+		if (transactionTime != other.transactionTime)
 			return false;
 		return true;
 	}

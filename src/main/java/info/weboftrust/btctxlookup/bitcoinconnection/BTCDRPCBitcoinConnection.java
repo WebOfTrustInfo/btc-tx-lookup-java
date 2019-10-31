@@ -373,9 +373,16 @@ public class BTCDRPCBitcoinConnection extends AbstractBitcoinConnection implemen
 			}
 		}
 
+		// find transaction lock time
+
+		Number number = (Number) getrawtransaction_result.get("time");
+		if (number == null) return null;
+
+		long transactionTime = number.longValue();
+
 		// done
 
-		return new DidBtcrData(spentInChainAndTxid, inputScriptPubKey, continuationUri);
+		return new DidBtcrData(spentInChainAndTxid, inputScriptPubKey, continuationUri, transactionTime);
 	}
 
 	/*

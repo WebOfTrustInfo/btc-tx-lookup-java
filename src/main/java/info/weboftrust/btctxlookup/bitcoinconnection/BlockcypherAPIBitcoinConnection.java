@@ -5,6 +5,8 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Iterator;
 
 import org.apache.commons.codec.DecoderException;
@@ -18,6 +20,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 
 import info.weboftrust.btctxlookup.Chain;
 import info.weboftrust.btctxlookup.ChainAndLocationData;
@@ -70,6 +73,8 @@ public class BlockcypherAPIBitcoinConnection extends AbstractBitcoinConnection i
 		if (blockHeight == -1 || transactionPosition == -1) return null;
 		return new ChainAndLocationData(chainAndTxid.getChain(), blockHeight, transactionPosition, chainAndTxid.getTxoIndex());
 	}
+
+	private static final SimpleDateFormat RFC_339_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 
 	@Override
 	public DidBtcrData getDidBtcrData(ChainAndTxid chainAndTxid) throws IOException {
@@ -168,9 +173,24 @@ public class BlockcypherAPIBitcoinConnection extends AbstractBitcoinConnection i
 			break;
 		}
 
+		// find transaction time
+
+		JsonPrimitive received = (JsonPrimitive) txData.get("received");
+		if (received == null) return null;
+
+		long transactionTime;
+
+		try {
+
+			transactionTime = RFC_339_DATE_FORMAT.parse(received.getAsString()).getTime() / 1000L;
+		} catch (ParseException ex) {
+
+			throw new IOException("Cannot parse receive date '" + received.getAsString() + "': " + ex.getMessage(), ex);
+		}
+
 		// done
 
-		return new DidBtcrData(spentInChainAndTxid, inputScriptPubKey, continuationUri);
+		return new DidBtcrData(spentInChainAndTxid, inputScriptPubKey, continuationUri, transactionTime);
 	}
 
 	/*
