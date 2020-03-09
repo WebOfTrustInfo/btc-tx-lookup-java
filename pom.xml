@@ -30,6 +30,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<github.global.server>github</github.global.server>
+		<skipTests>true</skipTests>
 	</properties>
 
 	<build>
@@ -62,6 +63,7 @@
 				<version>2.22.2</version>
 				<configuration>
 					<forkMode>never</forkMode>
+					<skipTests>${skipTests}</skipTests>
 				</configuration>
 			</plugin>
 			<plugin>
