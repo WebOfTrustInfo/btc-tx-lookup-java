@@ -24,61 +24,63 @@ public class TxrefConverterTest extends TestCase {
 
 		// mainnet (short form)
 
-		new Object[] { Chain.MAINNET, "tx1:rqqq-qqqq-qmhu-qhp", (int) 0x0, (int) 0x0 },
-		new Object[] { Chain.MAINNET, "tx1:rqqq-qqll-l8xh-jkg", (int) 0x0, (int) 0x7FFF },
-		new Object[] { Chain.MAINNET, "tx1:r7ll-llqq-qghq-qr8", (int) 0xFFFFFF, (int) 0x0 },
-		new Object[] { Chain.MAINNET, "tx1:r7ll-llll-l5xt-jzw", (int) 0xFFFFFF, (int) 0x7FFF },
+		new Object[] { Chain.MAINNET, "tx1:rqqq-qqqq-qygr-lgl", (int) 0x0, (int) 0x0 },
+		new Object[] { Chain.MAINNET, "tx1:rqqq-qqll-lceg-dfk", (int) 0x0, (int) 0x7FFF },
+		new Object[] { Chain.MAINNET, "tx1:r7ll-llqq-qhgl-lue", (int) 0xFFFFFF, (int) 0x0 },
+		new Object[] { Chain.MAINNET, "tx1:r7ll-llll-lte5-das", (int) 0xFFFFFF, (int) 0x7FFF },
 
-		new Object[] { Chain.MAINNET, "tx1:rzqq-qqqq-qgqu-t84", (int) 1, (int) 0 },	
-		new Object[] { Chain.MAINNET, "tx1:r7ll-lrgl-qqsy-mff", (int) 2097151, (int) 1000 },	
-		new Object[] { Chain.MAINNET, "tx1:r7ll-lrll-8xwc-yjp", (int) 2097151, (int) 8191 },	
-		new Object[] { Chain.MAINNET, "tx1:rk63-uqnf-zscg-527", (int) 467883, (int) 2355 },	
-		new Object[] { Chain.MAINNET, "tx1:r7ll-lrqq-q32l-zcx", (int) 2097151, (int) 0 },	
-		new Object[] { Chain.MAINNET, "tx1:rqqq-qqll-8vnm-xax", (int) 0, (int) 8191 },	
-		new Object[] { Chain.MAINNET, "tx1:rjk0-uqay-zsrw-hqe", (int) 0x71F69, (int) 0x89D },	
+		new Object[] { Chain.MAINNET, "tx1:rzqq-qqqq-qhlr-5ct", (int) 1, (int) 0 },
+		new Object[] { Chain.MAINNET, "tx1:r7ll-lrgl-ql0m-ykh", (int) 2097151, (int) 1000 },
+		new Object[] { Chain.MAINNET, "tx1:r7ll-lrll-8e38-mdl", (int) 2097151, (int) 8191 },
+		new Object[] { Chain.MAINNET, "tx1:rk63-uqnf-z08h-t4q", (int) 467883, (int) 2355 },
+		new Object[] { Chain.MAINNET, "tx1:r7ll-lrqq-qw4q-a8c", (int) 2097151, (int) 0 },
+		new Object[] { Chain.MAINNET, "tx1:rqqq-qqll-8nvy-ezc", (int) 0, (int) 8191 },
+		new Object[] { Chain.MAINNET, "tx1:rjk0-uqay-z0u3-gl8", (int) 0x71F69, (int) 0x89D },
 
 		// testnet (short form)
 
-		new Object[] { Chain.TESTNET, "txtest1:xqqq-qqqq-qkla-64l", (int) 0, (int) 0 },	
-		new Object[] { Chain.TESTNET, "txtest1:xqqq-qqll-l2wk-g5k", (int) 0, (int) 0x7FFF },	
-		new Object[] { Chain.TESTNET, "txtest1:x7ll-llqq-q9lp-6pe", (int) 0xFFFFFF, (int) 0 },	
-		new Object[] { Chain.TESTNET, "txtest1:x7ll-llll-lew2-gqs", (int) 0xFFFFFF, (int) 0x7FFF },	
+		new Object[] { Chain.TESTNET, "txtest1:xqqq-qqqq-qfqz-92p", (int) 0, (int) 0 },
+		new Object[] { Chain.TESTNET, "txtest1:xqqq-qqll-l43f-htg", (int) 0, (int) 0x7FFF },
+		new Object[] { Chain.TESTNET, "txtest1:x7ll-llqq-q6q7-978", (int) 0xFFFFFF, (int) 0 },
+		new Object[] { Chain.TESTNET, "txtest1:x7ll-llll-lx34-hlw", (int) 0xFFFFFF, (int) 0x7FFF },
 
-		new Object[] { Chain.TESTNET, "txtest1:xk63-uqnf-zasf-wgq", (int) 467883, (int) 2355 },	
-		new Object[] { Chain.TESTNET, "txtest1:xyv2-xzpq-q9wa-p7t", (int) 1152194, (int) 1 },
-		new Object[] { Chain.TESTNET, "txtest1:xz35-jznz-q6mr-7q6", (int) 1354001, (int) 83 },
-		new Object[] { Chain.TESTNET, "txtest1:xkyt-fzzq-q4wq-f2d", (int) 1201739, (int) 2 },
-		new Object[] { Chain.TESTNET, "txtest1:xksa-czpq-qeuw-qcg", (int) 1456907, (int) 1 },
+		new Object[] { Chain.TESTNET, "txtest1:xk63-uqnf-zz0k-3h7", (int) 467883, (int) 2355 },
+		new Object[] { Chain.TESTNET, "txtest1:xyv2-xzpq-q63z-7p4", (int) 1152194, (int) 1 },
+		new Object[] { Chain.TESTNET, "txtest1:xz35-jznz-q9yu-ply", (int) 1354001, (int) 83 },
+		new Object[] { Chain.TESTNET, "txtest1:xkyt-fzzq-q23l-k4n", (int) 1201739, (int) 2 },
+		new Object[] { Chain.TESTNET, "txtest1:xksa-czpq-qxr3-l8k", (int) 1456907, (int) 1 },
+
+		new Object[] { Chain.TESTNET, "txtest1:xjk0-uqay-zz5s-jae", (int) 466793, (int) 2205 },
 
 		// mainnet (extended form)
 
-		new Object[] { Chain.MAINNET, "tx1:yqqq-qqqq-qqqq-ksvh-26", (int) 0x0, (int) 0x0, (int) 0x0 },
-		new Object[] { Chain.MAINNET, "tx1:yqqq-qqll-lqqq-v0h2-2k", (int) 0x0, (int) 0x7FFF, (int) 0x0 },
-		new Object[] { Chain.MAINNET, "tx1:y7ll-llqq-qqqq-a5zy-tc", (int) 0xFFFFFF, (int) 0x0, (int) 0x0 },
-		new Object[] { Chain.MAINNET, "tx1:y7ll-llll-lqqq-8tee-t5", (int) 0xFFFFFF, (int) 0x7FFF, (int) 0x0 },
-		new Object[] { Chain.MAINNET, "tx1:yqqq-qqqq-qpqq-5j9q-nz", (int) 0x0, (int) 0x0, (int) 0x1 },
-		new Object[] { Chain.MAINNET, "tx1:yqqq-qqll-lpqq-wd7a-nw", (int) 0x0, (int) 0x7FFF, (int) 0x1 },
-		new Object[] { Chain.MAINNET, "tx1:y7ll-llqq-qpqq-lktn-jq", (int) 0xFFFFFF, (int) 0, (int) 0x1 },
-		new Object[] { Chain.MAINNET, "tx1:y7ll-llll-lpqq-9fsw-jv", (int) 0xFFFFFF, (int) 0x7FFF, (int) 0x1 },
-		new Object[] { Chain.MAINNET, "tx1:yjk0-uqay-zrfq-g2cg-t8", (int) 0x71F69, (int) 0x89D, (int) 0x123 },
-		new Object[] { Chain.MAINNET, "tx1:yjk0-uqay-zu4x-nk6u-pc", (int) 0x71F69, (int) 0x89D, (int) 0x1ABC },
+		new Object[] { Chain.MAINNET, "tx1:yqqq-qqqq-qqqq-f0ng-4y", (int) 0x0, (int) 0x0, (int) 0x0 },
+		new Object[] { Chain.MAINNET, "tx1:yqqq-qqll-lqqq-nsg4-4g", (int) 0x0, (int) 0x7FFF, (int) 0x0 },
+		new Object[] { Chain.MAINNET, "tx1:y7ll-llqq-qqqq-ztam-5x", (int) 0xFFFFFF, (int) 0x0, (int) 0x0 },
+		new Object[] { Chain.MAINNET, "tx1:y7ll-llll-lqqq-c5xx-52", (int) 0xFFFFFF, (int) 0x7FFF, (int) 0x0 },
+		new Object[] { Chain.MAINNET, "tx1:yqqq-qqqq-qpqq-td6l-vu", (int) 0x0, (int) 0x0, (int) 0x1 },
+		new Object[] { Chain.MAINNET, "tx1:yqqq-qqll-lpqq-3jpz-vs", (int) 0x0, (int) 0x7FFF, (int) 0x1 },
+		new Object[] { Chain.MAINNET, "tx1:y7ll-llqq-qpqq-qf5v-d7", (int) 0xFFFFFF, (int) 0, (int) 0x1 },
+		new Object[] { Chain.MAINNET, "tx1:y7ll-llll-lpqq-6k03-dj", (int) 0xFFFFFF, (int) 0x7FFF, (int) 0x1 },
+		new Object[] { Chain.MAINNET, "tx1:yjk0-uqay-zrfq-h48h-5e", (int) 0x71F69, (int) 0x89D, (int) 0x123 },
+		new Object[] { Chain.MAINNET, "tx1:yjk0-uqay-zu4x-vf9r-7x", (int) 0x71F69, (int) 0x89D, (int) 0x1ABC },
 
 		// testnet (extended form)
 
-		new Object[] { Chain.TESTNET, "txtest1:8qqq-qqqq-qqqq-cgru-fa", (int) 0x0, (int) 0x0, (int) 0x0 },
-		new Object[] { Chain.TESTNET, "txtest1:8qqq-qqll-lqqq-zhcp-f3", (int) 0x0, (int) 0x7FFF, (int) 0x0 },
-		new Object[] { Chain.TESTNET, "txtest1:87ll-llqq-qqqq-nvd0-gl", (int) 0xFFFFFF, (int) 0x0, (int) 0x0 },
-		new Object[] { Chain.TESTNET, "txtest1:87ll-llll-lqqq-fnkj-gn", (int) 0xFFFFFF, (int) 0x7FFF, (int) 0x0 },
-		new Object[] { Chain.TESTNET, "txtest1:8qqq-qqqq-qpqq-622t-s9", (int) 0x0, (int) 0x0, (int) 0x1 },
-		new Object[] { Chain.TESTNET, "txtest1:8qqq-qqll-lpqq-q43k-sf", (int) 0x0, (int) 0x7FFF, (int) 0x1 },
-		new Object[] { Chain.TESTNET, "txtest1:87ll-llqq-qpqq-3wyc-38", (int) 0xFFFFFF, (int) 0x0, (int) 0x1 },
-		new Object[] { Chain.TESTNET, "txtest1:87ll-llll-lpqq-t3l9-3t", (int) 0xFFFFFF, (int) 0x7FFF, (int) 0x1 },
-		new Object[] { Chain.TESTNET, "txtest1:8jk0-uqay-zrfq-xjhr-gq", (int) 0x71F69, (int) 0x89D, (int) 0x123 },
-		new Object[] { Chain.TESTNET, "txtest1:8jk0-uqay-zu4x-aw4h-zl", (int) 0x71F69, (int) 0x89D, (int) 0x1ABC },
+		new Object[] { Chain.TESTNET, "txtest1:8qqq-qqqq-qqqq-8hur-kr", (int) 0x0, (int) 0x0, (int) 0x0 },
+		new Object[] { Chain.TESTNET, "txtest1:8qqq-qqll-lqqq-ag87-k0", (int) 0x0, (int) 0x7FFF, (int) 0x0 },
+		new Object[] { Chain.TESTNET, "txtest1:87ll-llqq-qqqq-vnjs-hp", (int) 0xFFFFFF, (int) 0x0, (int) 0x0 },
+		new Object[] { Chain.TESTNET, "txtest1:87ll-llll-lqqq-kvfd-hd", (int) 0xFFFFFF, (int) 0x7FFF, (int) 0x0 },
+		new Object[] { Chain.TESTNET, "txtest1:8qqq-qqqq-qpqq-9445-0m", (int) 0x0, (int) 0x0, (int) 0x1 },
+		new Object[] { Chain.TESTNET, "txtest1:8qqq-qqll-lpqq-l2wf-0h", (int) 0x0, (int) 0x7FFF, (int) 0x1 },
+		new Object[] { Chain.TESTNET, "txtest1:87ll-llqq-qpqq-w3m8-we", (int) 0xFFFFFF, (int) 0x0, (int) 0x1 },
+		new Object[] { Chain.TESTNET, "txtest1:87ll-llll-lpqq-5wq6-w4", (int) 0xFFFFFF, (int) 0x7FFF, (int) 0x1 },
+		new Object[] { Chain.TESTNET, "txtest1:8jk0-uqay-zrfq-edgu-h7", (int) 0x71F69, (int) 0x89D, (int) 0x123 },
+		new Object[] { Chain.TESTNET, "txtest1:8jk0-uqay-zu4x-z32g-ap", (int) 0x71F69, (int) 0x89D, (int) 0x1ABC },
 
-		new Object[] { Chain.TESTNET, "txtest1:8z35-jznz-qqqq-xstv-nc", (int) 1354001, (int) 83, (int) 0x0 },
-		new Object[] { Chain.TESTNET, "txtest1:8kyt-fzzq-qqqq-ase0-d8", (int) 1201739, (int) 2, (int) 0x0 },
-		new Object[] { Chain.TESTNET, "txtest1:8ksa-czpq-qqqq-k85h-97", (int) 1456907, (int) 1, (int) 0x0 }
+		new Object[] { Chain.TESTNET, "txtest1:8z35-jznz-qqqq-e05n-vx", (int) 1354001, (int) 83, (int) 0x0 },
+		new Object[] { Chain.TESTNET, "txtest1:8kyt-fzzq-qqqq-z0xs-je", (int) 1201739, (int) 2, (int) 0x0 },
+		new Object[] { Chain.TESTNET, "txtest1:8ksa-czpq-qqqq-fctg-6q", (int) 1456907, (int) 1, (int) 0x0 }
 	};
 
 	public void testTxrefEncode() throws Exception {
@@ -127,31 +129,31 @@ public class TxrefConverterTest extends TestCase {
 
 	private static Object[][] tests2 = new Object[][] {
 
-		new Object[] { "tx1:yqqq-qqqq-qqqq-ksvh-26", "tx1:rqqq-qqqq-qmhu-qhp" },
-		new Object[] { "tx1:yqqq-qqll-lqqq-v0h2-2k", "tx1:rqqq-qqll-l8xh-jkg" },
-		new Object[] { "tx1:y7ll-llqq-qqqq-a5zy-tc", "tx1:r7ll-llqq-qghq-qr8" },
-		new Object[] { "tx1:y7ll-llll-lqqq-8tee-t5", "tx1:r7ll-llll-l5xt-jzw" },
-		new Object[] { "tx1:yqqq-qqqq-qpqq-5j9q-nz", null },
-		new Object[] { "tx1:yqqq-qqll-lpqq-wd7a-nw", null },
-		new Object[] { "tx1:y7ll-llqq-qpqq-lktn-jq", null },
-		new Object[] { "tx1:y7ll-llll-lpqq-9fsw-jv", null },
-		new Object[] { "tx1:yjk0-uqay-zrfq-g2cg-t8", null },
-		new Object[] { "tx1:yjk0-uqay-zu4x-nk6u-pc", null },
+		new Object[] { "tx1:yqqq-qqqq-qqqq-f0ng-4y", "tx1:rqqq-qqqq-qygr-lgl" },
+		new Object[] { "tx1:yqqq-qqll-lqqq-nsg4-4g", "tx1:rqqq-qqll-lceg-dfk" },
+		new Object[] { "tx1:y7ll-llqq-qqqq-ztam-5x", "tx1:r7ll-llqq-qhgl-lue" },
+		new Object[] { "tx1:y7ll-llll-lqqq-c5xx-52", "tx1:r7ll-llll-lte5-das" },
+		new Object[] { "tx1:yqqq-qqqq-qpqq-td6l-vu", null },
+		new Object[] { "tx1:yqqq-qqll-lpqq-3jpz-vs", null },
+		new Object[] { "tx1:y7ll-llqq-qpqq-qf5v-d7", null },
+		new Object[] { "tx1:y7ll-llll-lpqq-6k03-dj", null },
+		new Object[] { "tx1:yjk0-uqay-zrfq-h48h-5e", null },
+		new Object[] { "tx1:yjk0-uqay-zu4x-vf9r-7x", null },
 
-		new Object[] { "txtest1:8qqq-qqqq-qqqq-cgru-fa", "txtest1:xqqq-qqqq-qkla-64l" },
-		new Object[] { "txtest1:8qqq-qqll-lqqq-zhcp-f3", "txtest1:xqqq-qqll-l2wk-g5k" },
-		new Object[] { "txtest1:87ll-llqq-qqqq-nvd0-gl", "txtest1:x7ll-llqq-q9lp-6pe" },
-		new Object[] { "txtest1:87ll-llll-lqqq-fnkj-gn", "txtest1:x7ll-llll-lew2-gqs" },
-		new Object[] { "txtest1:8qqq-qqqq-qpqq-622t-s9", null },
-		new Object[] { "txtest1:8qqq-qqll-lpqq-q43k-sf", null },
-		new Object[] { "txtest1:87ll-llqq-qpqq-3wyc-38", null },
-		new Object[] { "txtest1:87ll-llll-lpqq-t3l9-3t", null },
-		new Object[] { "txtest1:8jk0-uqay-zrfq-xjhr-gq", null },
-		new Object[] { "txtest1:8jk0-uqay-zu4x-aw4h-zl", null },
+		new Object[] { "txtest1:8qqq-qqqq-qqqq-8hur-kr", "txtest1:xqqq-qqqq-qfqz-92p" },
+		new Object[] { "txtest1:8qqq-qqll-lqqq-ag87-k0", "txtest1:xqqq-qqll-l43f-htg" },
+		new Object[] { "txtest1:87ll-llqq-qqqq-vnjs-hp", "txtest1:x7ll-llqq-q6q7-978" },
+		new Object[] { "txtest1:87ll-llll-lqqq-kvfd-hd", "txtest1:x7ll-llll-lx34-hlw" },
+		new Object[] { "txtest1:8qqq-qqqq-qpqq-9445-0m", null },
+		new Object[] { "txtest1:8qqq-qqll-lpqq-l2wf-0h", null },
+		new Object[] { "txtest1:87ll-llqq-qpqq-w3m8-we", null },
+		new Object[] { "txtest1:87ll-llll-lpqq-5wq6-w4", null },
+		new Object[] { "txtest1:8jk0-uqay-zrfq-edgu-h7", null },
+		new Object[] { "txtest1:8jk0-uqay-zu4x-z32g-ap", null },
 
-		new Object[] { "txtest1:8z35-jznz-qqqq-xstv-nc", "txtest1:xz35-jznz-q6mr-7q6" },
-		new Object[] { "txtest1:8kyt-fzzq-qqqq-ase0-d8", "txtest1:xkyt-fzzq-q4wq-f2d" },
-		new Object[] { "txtest1:8ksa-czpq-qqqq-k85h-97", "txtest1:xksa-czpq-qeuw-qcg" },
+		new Object[] { "txtest1:8z35-jznz-qqqq-e05n-vx", "txtest1:xz35-jznz-q9yu-ply" },
+		new Object[] { "txtest1:8kyt-fzzq-qqqq-z0xs-je", "txtest1:xkyt-fzzq-q23l-k4n" },
+		new Object[] { "txtest1:8ksa-czpq-qqqq-fctg-6q", "txtest1:xksa-czpq-qxr3-l8k" }
 	};
 
 	public void testShortExtended() throws Exception {
@@ -166,12 +168,12 @@ public class TxrefConverterTest extends TestCase {
 
 			if (shrt == null) {
 
-				assert(extChainAndLocationData.getLocationData().getTxoIndex() > 0);
-				assert(txref.equals(ext));
+				assertTrue(extChainAndLocationData.getLocationData().getTxoIndex() > 0);
+				assertEquals(txref, ext);
 			} else {
 
-				assert(extChainAndLocationData.getLocationData().getTxoIndex() == 0);
-				assert(txref.equals(shrt));
+				assertEquals(extChainAndLocationData.getLocationData().getTxoIndex(), 0);
+				assertEquals(txref, shrt);
 			}
 		}
 	}
