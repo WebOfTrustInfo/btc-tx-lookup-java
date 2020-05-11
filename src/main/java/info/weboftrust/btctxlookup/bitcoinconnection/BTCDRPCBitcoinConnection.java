@@ -225,7 +225,7 @@ public class BTCDRPCBitcoinConnection extends AbstractBitcoinConnection implemen
 			if (scriptSig == null) continue;
 
 			String asm = (String) scriptSig.get("asm");
-			if (asm == null) continue;
+			if (asm == null || asm.trim().isEmpty()) continue;
 
 			Matcher matcher = patternAsmInputScriptPubKey.matcher(asm);
 

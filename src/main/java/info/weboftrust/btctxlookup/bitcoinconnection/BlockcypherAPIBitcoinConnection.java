@@ -97,12 +97,13 @@ public class BlockcypherAPIBitcoinConnection extends AbstractBitcoinConnection i
 		for (Iterator<JsonElement> i = ((JsonArray) txData.get("inputs")).iterator(); i.hasNext(); ) {
 
 			JsonObject input = i.next().getAsJsonObject();
-			JsonElement script = input.get("script");
 			JsonElement scriptType = input.get("script_type");
-			if (script == null || ! script.isJsonPrimitive()) continue;
 			if (scriptType == null || ! scriptType.isJsonPrimitive()) continue;
 
 			if ("pay-to-pubkey-hash".equals(scriptType.getAsString())) {
+
+				JsonElement script = input.get("script");
+				if (script == null || ! script.isJsonPrimitive()) continue;
 
 				Script payToPubKeyHashScript;
 
@@ -116,6 +117,9 @@ public class BlockcypherAPIBitcoinConnection extends AbstractBitcoinConnection i
 
 				inputScriptPubKey = Hex.encodeHexString(payToPubKeyHashScript.getChunks().get(1).data);
 				break;
+			} else {
+
+				throw new IOException("Script type " + scriptType.getAsString() + " not supported.");
 			}
 		}
 

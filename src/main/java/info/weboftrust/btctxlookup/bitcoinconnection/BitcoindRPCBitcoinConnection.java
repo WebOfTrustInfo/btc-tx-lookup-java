@@ -6,6 +6,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -117,7 +118,12 @@ public class BitcoindRPCBitcoinConnection extends AbstractBitcoinConnection impl
 
 			if (in.scriptSig() != null && in.scriptSig().get("asm") != null) {
 
-				Matcher matcher = patternAsmInputScriptPubKey.matcher((String) in.scriptSig().get("asm"));
+				Map<String, Object> scriptSig = in.scriptSig();
+
+				String asm = (String) scriptSig.get("asm");
+				if (asm == null || asm.trim().isEmpty()) continue;
+
+				Matcher matcher = patternAsmInputScriptPubKey.matcher(asm);
 
 				if (log.isDebugEnabled()) log.debug("IN: " + in.scriptSig().get("asm") + " (MATCHES: " + matcher.matches() + ")");
 
