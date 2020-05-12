@@ -98,7 +98,7 @@ public class BitcoindRPCBitcoinConnection extends AbstractBitcoinConnection impl
 	}
 
 	@Override
-	public DidBtcrData getDidBtcrData(ChainAndTxid chainAndTxid) {
+	public DidBtcrData getDidBtcrData(ChainAndTxid chainAndTxid) throws IOException {
 
 		// retrieve transaction data
 
@@ -116,12 +116,13 @@ public class BitcoindRPCBitcoinConnection extends AbstractBitcoinConnection impl
 
 		for (In in : vIn) {
 
-			if (in.scriptSig() != null && in.scriptSig().get("asm") != null) {
+			Map<String, Object> scriptSig = in.scriptSig();
+			if (scriptSig == null) continue;
 
-				Map<String, Object> scriptSig = in.scriptSig();
+			String asm = (String) scriptSig.get("asm");
+			List<String> txinwitness = null;
 
-				String asm = (String) scriptSig.get("asm");
-				if (asm == null || asm.trim().isEmpty()) continue;
+			if (asm != null && ! asm.trim().isEmpty()) {
 
 				Matcher matcher = patternAsmInputScriptPubKey.matcher(asm);
 
@@ -134,6 +135,13 @@ public class BitcoindRPCBitcoinConnection extends AbstractBitcoinConnection impl
 					inputScriptPubKey = matcher.group(1);
 					break;
 				}
+			} else if (txinwitness != null && txinwitness.size() > 0) {
+
+				/* TODO */ inputScriptPubKey = null;
+				break;
+			} else {
+
+				throw new IOException("Script type not supported.");
 			}
 		}
 

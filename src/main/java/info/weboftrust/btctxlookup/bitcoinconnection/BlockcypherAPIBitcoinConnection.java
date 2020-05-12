@@ -117,6 +117,10 @@ public class BlockcypherAPIBitcoinConnection extends AbstractBitcoinConnection i
 
 				inputScriptPubKey = Hex.encodeHexString(payToPubKeyHashScript.getChunks().get(1).data);
 				break;
+			} else if ("pay-to-witness-pubkey-hash".equals(scriptType.getAsString())) {
+
+				/* TODO */ inputScriptPubKey = null;
+				break;
 			} else {
 
 				throw new IOException("Script type " + scriptType.getAsString() + " not supported.");
