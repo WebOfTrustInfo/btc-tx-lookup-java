@@ -243,7 +243,7 @@ public class BTCDRPCBitcoinConnection extends AbstractBitcoinConnection implemen
 				}
 			} else if (txinwitness != null && txinwitness.size() > 0) {
 
-				/* TODO */ inputScriptPubKey = null;
+				inputScriptPubKey = txinwitness.get(1);
 				break;
 			} else {
 

@@ -120,7 +120,7 @@ public class BitcoindRPCBitcoinConnection extends AbstractBitcoinConnection impl
 			if (scriptSig == null) continue;
 
 			String asm = (String) scriptSig.get("asm");
-			List<String> txinwitness = null;
+			List<String> txinwitness = null;	// TODO: How to get this with bitcoind ?
 
 			if (asm != null && ! asm.trim().isEmpty()) {
 
@@ -137,7 +137,7 @@ public class BitcoindRPCBitcoinConnection extends AbstractBitcoinConnection impl
 				}
 			} else if (txinwitness != null && txinwitness.size() > 0) {
 
-				/* TODO */ inputScriptPubKey = null;
+				inputScriptPubKey = txinwitness.get(1);
 				break;
 			} else {
 

@@ -119,7 +119,10 @@ public class BlockcypherAPIBitcoinConnection extends AbstractBitcoinConnection i
 				break;
 			} else if ("pay-to-witness-pubkey-hash".equals(scriptType.getAsString())) {
 
-				/* TODO */ inputScriptPubKey = null;
+				JsonElement witness = input.get("witness");
+				if (witness == null || ! witness.isJsonArray()) continue;
+
+				inputScriptPubKey = witness.getAsJsonArray().get(1).getAsString();
 				break;
 			} else {
 
