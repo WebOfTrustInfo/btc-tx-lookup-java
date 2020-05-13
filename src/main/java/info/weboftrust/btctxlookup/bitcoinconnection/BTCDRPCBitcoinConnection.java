@@ -241,8 +241,9 @@ public class BTCDRPCBitcoinConnection extends AbstractBitcoinConnection implemen
 					inputScriptPubKey = matcher.group(1);
 					break;
 				}
-			} else if (txinwitness != null && txinwitness.size() > 0) {
+			} else if (txinwitness != null && txinwitness.size() == 2) {
 
+				//Get the second witness push -> pubKey
 				inputScriptPubKey = txinwitness.get(1);
 				break;
 			} else {
