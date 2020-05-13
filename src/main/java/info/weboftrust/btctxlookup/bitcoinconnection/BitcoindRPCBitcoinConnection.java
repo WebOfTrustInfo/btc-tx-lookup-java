@@ -1,5 +1,22 @@
 package info.weboftrust.btctxlookup.bitcoinconnection;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import info.weboftrust.btctxlookup.Chain;
+import info.weboftrust.btctxlookup.ChainAndLocationData;
+import info.weboftrust.btctxlookup.ChainAndTxid;
+import info.weboftrust.btctxlookup.DidBtcrData;
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Hex;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import wf.bitcoin.javabitcoindrpcclient.BitcoinJSONRPCClient;
+import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient;
+import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient.Block;
+import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient.RawTransaction;
+import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient.RawTransaction.In;
+import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient.RawTransaction.Out;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
@@ -9,22 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.apache.commons.codec.DecoderException;
-import org.apache.commons.codec.binary.Hex;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import info.weboftrust.btctxlookup.Chain;
-import info.weboftrust.btctxlookup.ChainAndLocationData;
-import info.weboftrust.btctxlookup.ChainAndTxid;
-import info.weboftrust.btctxlookup.DidBtcrData;
-import wf.bitcoin.javabitcoindrpcclient.BitcoinJSONRPCClient;
-import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient;
-import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient.Block;
-import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient.RawTransaction;
-import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient.RawTransaction.In;
-import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient.RawTransaction.Out;
 
 public class BitcoindRPCBitcoinConnection extends AbstractBitcoinConnection implements BitcoinConnection {
 
@@ -107,6 +108,8 @@ public class BitcoindRPCBitcoinConnection extends AbstractBitcoinConnection impl
 		RawTransaction rawTransaction = bitcoindRpcClient.getRawTransaction(chainAndTxid.getTxid());
 		if (rawTransaction == null) return null;
 
+		final ObjectMapper mapper = new ObjectMapper();
+
 		// find input script pub key
 
 		String inputScriptPubKey = null;
@@ -120,7 +123,9 @@ public class BitcoindRPCBitcoinConnection extends AbstractBitcoinConnection impl
 			if (scriptSig == null) continue;
 
 			String asm = (String) scriptSig.get("asm");
-			List<String> txinwitness = null;	// TODO: How to get this with bitcoind ?
+
+			Map<String, Object> mIn = mapper.convertValue(in, new TypeReference<Map<String, Object>>() {});
+			List<String> txinwitness = (List<String>) ((Map) mIn.get("m")).get("txinwitness");
 
 			if (asm != null && ! asm.trim().isEmpty()) {
 
@@ -135,8 +140,9 @@ public class BitcoindRPCBitcoinConnection extends AbstractBitcoinConnection impl
 					inputScriptPubKey = matcher.group(1);
 					break;
 				}
-			} else if (txinwitness != null && txinwitness.size() > 0) {
+			} else if (txinwitness != null && txinwitness.size() == 2) {
 
+				//Get the second witness push -> pubKey
 				inputScriptPubKey = txinwitness.get(1);
 				break;
 			} else {
