@@ -4,7 +4,7 @@
 	<groupId>info.weboftrust</groupId>
 	<artifactId>btc-tx-lookup-java</artifactId>
 	<packaging>jar</packaging>
-	<version>0.1.1-SNAPSHOT</version>
+	<version>0.1.1</version>
 	<name>btc-tx-lookup-java</name>
 
 	<issueManagement>
@@ -16,7 +16,8 @@
 		<url>https://github.com/WebOfTrustInfo/btc-tx-lookup-java</url>
 		<connection>scm:git:git://github.com/WebOfTrustInfo/btc-tx-lookup-java.git</connection>
 		<developerConnection>scm:git:git@github.com:WebOfTrustInfo/btc-tx-lookup-java.git</developerConnection>
-	</scm>
+	  <tag>v0.1.1</tag>
+  </scm>
 
 	<distributionManagement>
 		<repository>
