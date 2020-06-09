@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -225,18 +226,29 @@ public class BTCDRPCBitcoinConnection extends AbstractBitcoinConnection implemen
 			if (scriptSig == null) continue;
 
 			String asm = (String) scriptSig.get("asm");
-			if (asm == null) continue;
+			List<String> txinwitness = (List<String>) in.get("txinwitness");
 
-			Matcher matcher = patternAsmInputScriptPubKey.matcher(asm);
+			if (asm != null && ! asm.trim().isEmpty()) {
 
-			if (log.isDebugEnabled()) log.debug("IN: " + asm + " (MATCHES: " + matcher.matches() + ")");
+				Matcher matcher = patternAsmInputScriptPubKey.matcher(asm);
 
-			if (matcher.matches() && matcher.groupCount() == 1) {
+				if (log.isDebugEnabled()) log.debug("IN: " + asm + " (MATCHES: " + matcher.matches() + ")");
 
-				if (log.isDebugEnabled()) log.debug("inputScriptPubKey: " + matcher.group(1));
+				if (matcher.matches() && matcher.groupCount() == 1) {
 
-				inputScriptPubKey = matcher.group(1);
+					if (log.isDebugEnabled()) log.debug("inputScriptPubKey: " + matcher.group(1));
+
+					inputScriptPubKey = matcher.group(1);
+					break;
+				}
+			} else if (txinwitness != null && txinwitness.size() == 2) {
+
+				//Get the second witness push -> pubKey
+				inputScriptPubKey = txinwitness.get(1);
 				break;
+			} else {
+
+				throw new IOException("Script type not supported.");
 			}
 		}
 

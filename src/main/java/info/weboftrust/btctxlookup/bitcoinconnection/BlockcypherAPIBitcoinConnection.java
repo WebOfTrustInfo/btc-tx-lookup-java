@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Iterator;
+import java.util.TimeZone;
 
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
@@ -30,6 +31,18 @@ import info.weboftrust.btctxlookup.DidBtcrData;
 public class BlockcypherAPIBitcoinConnection extends AbstractBitcoinConnection implements BitcoinConnection {
 
 	private static final BlockcypherAPIBitcoinConnection instance = new BlockcypherAPIBitcoinConnection();
+
+	public static final SimpleDateFormat DATE_FORMAT;
+	public static final SimpleDateFormat DATE_FORMAT_MILLIS;
+
+	static {
+
+		DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+		DATE_FORMAT.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+		DATE_FORMAT_MILLIS = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'");
+		DATE_FORMAT_MILLIS.setTimeZone(TimeZone.getTimeZone("UTC"));
+	}
 
 	public BlockcypherAPIBitcoinConnection() {
 
@@ -74,8 +87,6 @@ public class BlockcypherAPIBitcoinConnection extends AbstractBitcoinConnection i
 		return new ChainAndLocationData(chainAndTxid.getChain(), blockHeight, transactionPosition, chainAndTxid.getTxoIndex());
 	}
 
-	private static final SimpleDateFormat RFC_339_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-
 	@Override
 	public DidBtcrData getDidBtcrData(ChainAndTxid chainAndTxid) throws IOException {
 
@@ -97,12 +108,13 @@ public class BlockcypherAPIBitcoinConnection extends AbstractBitcoinConnection i
 		for (Iterator<JsonElement> i = ((JsonArray) txData.get("inputs")).iterator(); i.hasNext(); ) {
 
 			JsonObject input = i.next().getAsJsonObject();
-			JsonElement script = input.get("script");
 			JsonElement scriptType = input.get("script_type");
-			if (script == null || ! script.isJsonPrimitive()) continue;
 			if (scriptType == null || ! scriptType.isJsonPrimitive()) continue;
 
 			if ("pay-to-pubkey-hash".equals(scriptType.getAsString())) {
+
+				JsonElement script = input.get("script");
+				if (script == null || ! script.isJsonPrimitive()) continue;
 
 				Script payToPubKeyHashScript;
 
@@ -116,6 +128,16 @@ public class BlockcypherAPIBitcoinConnection extends AbstractBitcoinConnection i
 
 				inputScriptPubKey = Hex.encodeHexString(payToPubKeyHashScript.getChunks().get(1).data);
 				break;
+			} else if ("pay-to-witness-pubkey-hash".equals(scriptType.getAsString())) {
+
+				JsonElement witness = input.get("witness");
+				if (witness == null || ! witness.isJsonArray()) continue;
+
+				inputScriptPubKey = witness.getAsJsonArray().get(1).getAsString();
+				break;
+			} else {
+
+				throw new IOException("Script type " + scriptType.getAsString() + " not supported.");
 			}
 		}
 
@@ -182,10 +204,16 @@ public class BlockcypherAPIBitcoinConnection extends AbstractBitcoinConnection i
 
 		try {
 
-			transactionTime = RFC_339_DATE_FORMAT.parse(received.getAsString()).getTime() / 1000L;
+			transactionTime = DATE_FORMAT.parse(received.getAsString()).getTime() / 1000L;
 		} catch (ParseException ex) {
 
-			throw new IOException("Cannot parse receive date '" + received.getAsString() + "': " + ex.getMessage(), ex);
+			try {
+
+				transactionTime = DATE_FORMAT_MILLIS.parse(received.getAsString()).getTime() / 1000L;
+			} catch (ParseException ex2) {
+
+				throw new IOException("Cannot parse receive date '" + received.getAsString() + "': " + ex2.getMessage(), ex2);
+			}
 		}
 
 		// done
