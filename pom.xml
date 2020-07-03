@@ -8,16 +8,27 @@
     <version>0.2-SNAPSHOT</version>
     <name>btc-tx-lookup-java</name>
 
-    <issueManagement>
-        <url>https://github.com/WebOfTrustInfo/btc-tx-lookup-java/issues</url>
-        <system>GitHub Issues</system>
-    </issueManagement>
-
     <scm>
         <url>https://github.com/WebOfTrustInfo/btc-tx-lookup-java</url>
         <connection>scm:git:git://github.com/WebOfTrustInfo/btc-tx-lookup-java.git</connection>
         <developerConnection>scm:git:git@github.com:WebOfTrustInfo/btc-tx-lookup-java.git</developerConnection>
     </scm>
+
+    <issueManagement>
+        <url>https://github.com/WebOfTrustInfo/btc-tx-lookup-java/issues</url>
+        <system>GitHub Issues</system>
+    </issueManagement>
+
+	<distributionManagement>
+		<snapshotRepository>
+			<id>danubetech-maven-snapshots</id>
+			<url>https://repo.danubetech.com/repository/maven-snapshots/</url>
+		</snapshotRepository>
+		<repository>
+			<id>danubetech-maven-releases</id>
+			<url>https://repo.danubetech.com/repository/maven-releases/</url>
+		</repository>
+	</distributionManagement>
 
     <repositories>
         <repository>
@@ -29,17 +40,6 @@
             <url>https://repo.danubetech.com/repository/maven-snapshots/</url>
         </repository>
     </repositories>
-
-    <distributionManagement>
-        <snapshotRepository>
-            <id>danubetech-maven-snapshots</id>
-            <url>https://repo.danubetech.com/repository/maven-snapshots/</url>
-        </snapshotRepository>
-        <repository>
-            <id>danubetech-maven-releases</id>
-            <url>https://repo.danubetech.com/repository/maven-releases/</url>
-        </repository>
-    </distributionManagement>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
