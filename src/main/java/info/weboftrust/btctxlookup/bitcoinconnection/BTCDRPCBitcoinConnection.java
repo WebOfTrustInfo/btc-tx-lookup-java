@@ -1,249 +1,138 @@
 package info.weboftrust.btctxlookup.bitcoinconnection;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
+import javax.annotation.Nullable;
 
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
-import org.bitcoinj.core.ECKey;
-import org.bitcoinj.core.LegacyAddress;
-import org.bitcoinj.core.NetworkParameters;
-import org.bitcoinj.params.MainNetParams;
-import org.bitcoinj.params.TestNet3Params;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-import com.googlecode.jsonrpc4j.JsonRpcClientException;
-import com.googlecode.jsonrpc4j.JsonRpcHttpClient;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.google.common.base.Preconditions;
 
+import info.weboftrust.btctxlookup.BitcoinClientID;
 import info.weboftrust.btctxlookup.Chain;
-import info.weboftrust.btctxlookup.ChainAndLocationData;
 import info.weboftrust.btctxlookup.ChainAndTxid;
 import info.weboftrust.btctxlookup.DidBtcrData;
+import info.weboftrust.btctxlookup.dto.AddressRelatedTx;
+import wf.bitcoin.javabitcoindrpcclient.BitcoinJSONRPCClient;
+import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient;
+import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient.RawTransaction.In;
+import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient.RawTransaction.Out;
 
-public class BTCDRPCBitcoinConnection extends AbstractBitcoinConnection implements BitcoinConnection {
+public class BTCDRPCBitcoinConnection extends BitcoindRPCBitcoinConnection {
 
-	private static final BTCDRPCBitcoinConnection instance = new BTCDRPCBitcoinConnection();
+	private final static ObjectMapper mapper;
+	private static final Logger log = LogManager.getLogger(BTCDRPCBitcoinConnection.class);
 
-	private static Logger log = LoggerFactory.getLogger(BTCDRPCBitcoinConnection.class);
+	private static final int DEFAULT_COUNT = 100;
+	private static final int DEFAULT_SKIP = 0;
+	private static final boolean DEFAULT_REVERSE = false;
 
-	private static final Pattern patternAsmInputScriptPubKey = Pattern.compile("^[^\\s]+ ([0-9a-fA-F]+)$");
-	private static final Pattern patternAsmContinuationUri = Pattern.compile("^OP_RETURN ([0-9a-fA-F]+)$");
-
-	public static final URL DEFAULT_JSONRPC_URL;
-	public static final URL DEFAULT_JSONRPC_TESTNET_URL;
-	public static final String DEFAULT_RPC_USER = "user";
-	public static final String DEFAULT_RPC_PASS = "pass";
-
-	protected JsonRpcHttpClient btcdRpcClientMainnet;
-	protected JsonRpcHttpClient btcdRpcClientTestnet;
+	private static final BitcoinClientID CLIENT_ID = BitcoinClientID.BTCD;
 
 	static {
-
-		try {
-
-			DEFAULT_JSONRPC_URL = new URL("http://localhost:8334");
-			DEFAULT_JSONRPC_TESTNET_URL = new URL("http://localhost:18334");
-		} catch (MalformedURLException ex) {
-
-			throw new ExceptionInInitializerError(ex);
-		}
+		mapper = new ObjectMapper();
+		mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 	}
 
-	public BTCDRPCBitcoinConnection(JsonRpcHttpClient btcdRpcClientMainnet, JsonRpcHttpClient btcdRpcClientTestnet) {
-
-		this.btcdRpcClientMainnet = btcdRpcClientMainnet;
-		this.btcdRpcClientTestnet = btcdRpcClientTestnet;
-	}
-
-	public BTCDRPCBitcoinConnection(URL rpcUrlMainnet, URL rpcUrlTestnet) {
-
-		this(btcdRpcClient(rpcUrlMainnet), btcdRpcClient(rpcUrlTestnet));
-	}
-
+	@Deprecated
 	public BTCDRPCBitcoinConnection(String rpcUrlMainnet, String rpcUrlTestnet) throws MalformedURLException {
-
-		this(new URL(rpcUrlMainnet), new URL(rpcUrlTestnet));
+		super(rpcUrlMainnet, rpcUrlTestnet);
 	}
 
+	public BTCDRPCBitcoinConnection(String rpcUrl, Chain chain) throws MalformedURLException {
+		super(rpcUrl, chain);
+	}
+
+	public BTCDRPCBitcoinConnection(URL rpcUrl, Chain chain) {
+		super(rpcUrl, chain);
+	}
+
+	@Deprecated
+	public BTCDRPCBitcoinConnection(URL rpcUrlMainnet, URL rpcUrlTestnet) {
+		super(rpcUrlMainnet, rpcUrlTestnet);
+	}
+
+	@Deprecated
+	public BTCDRPCBitcoinConnection(BitcoinJSONRPCClient bitcoindRpcClientMainnet,
+			BitcoinJSONRPCClient bitcoindRpcClientTestnet) {
+		super(bitcoindRpcClientMainnet, bitcoindRpcClientTestnet);
+	}
+
+	@Deprecated
 	public BTCDRPCBitcoinConnection() {
-
-		this(DEFAULT_JSONRPC_URL, DEFAULT_JSONRPC_TESTNET_URL);
+		super();
 	}
 
-	public static BTCDRPCBitcoinConnection get() {
-
-		return instance;
-	}
-
-	@SuppressWarnings("unchecked")
-	@Override
-	public ChainAndTxid lookupChainAndTxid(ChainAndLocationData chainAndLocationData) throws IOException {
-
-		JsonRpcHttpClient btcdRpcClient = chainAndLocationData.getChain() == Chain.MAINNET ? this.btcdRpcClientMainnet : this.btcdRpcClientTestnet;
-
-		String getblockhash_result;
-
-		try {
-
-			getblockhash_result = btcdRpcClient.invoke("getblockhash", new Object[] { chainAndLocationData.getLocationData().getBlockHeight() }, String.class);
-		} catch (IOException ex) {
-
-			throw ex;
-		} catch (Throwable ex) {
-
-			throw new IOException("getblockhash() exception: " + ex.getMessage(), ex);
-		}
-
-		String blockHash = getblockhash_result;
-
-		LinkedHashMap<String, Object> getblock_result;
-
-		try {
-
-			getblock_result = btcdRpcClient.invoke("getblock", new Object[] { blockHash, true, false }, LinkedHashMap.class);
-		} catch (IOException ex) {
-
-			throw ex;
-		} catch (Throwable ex) {
-
-			throw new IOException("getblock() exception: " + ex.getMessage(), ex);
-		}
-
-		ArrayList<String> txs = (ArrayList<String>) getblock_result.get("tx");
-		if (txs == null) return null;
-
-		String txid = txs.get(chainAndLocationData.getLocationData().getTransactionPosition());
-		if (txid == null) return null;
-
-		return new ChainAndTxid(chainAndLocationData.getChain(), txid, chainAndLocationData.getLocationData().getTxoIndex());
+	public static BitcoinClientID getClientId() {
+		return CLIENT_ID;
 	}
 
 	@SuppressWarnings("unchecked")
-	@Override
-	public ChainAndLocationData lookupChainAndLocationData(ChainAndTxid chainAndTxid) throws IOException {
-
-		JsonRpcHttpClient btcdRpcClient = chainAndTxid.getChain() == Chain.MAINNET ? this.btcdRpcClientMainnet : this.btcdRpcClientTestnet;
-
-		LinkedHashMap<String, Object> getrawtransaction_result;
-
-		try {
-
-			getrawtransaction_result = btcdRpcClient.invoke("getrawtransaction", new Object[] { chainAndTxid.getTxid(), 1 }, LinkedHashMap.class);
-		} catch (JsonRpcClientException ex) {
-
-			throw ex;
-		} catch (IOException ex) {
-
-			throw ex;
-		} catch (Throwable ex) {
-
-			throw new IOException("getrawtransaction() exception: " + ex.getMessage(), ex);
-		}
-
-		String blockHash = (String) getrawtransaction_result.get("blockhash");
-		if (blockHash == null) return null;
-
-		LinkedHashMap<String, Object> getblock_result;
-
-		try {
-
-			getblock_result = btcdRpcClient.invoke("getblock", new Object[] { blockHash, true, false }, LinkedHashMap.class);
-		} catch (JsonRpcClientException ex) {
-
-			if (ex.getCode() == -5) {
-
-				return null;
-			} else {
-
-				throw ex;
-			}
-		} catch (IOException ex) {
-
-			throw ex;
-		} catch (Throwable ex) {
-
-			throw new IOException("getblock() exception: " + ex.getMessage(), ex);
-		}
-
-		Integer blockHeight = (Integer) getblock_result.get("height");
-		if (blockHeight == null) return null;
-
-		ArrayList<String> txs = (ArrayList<String>) getblock_result.get("tx");
-		if (txs == null) return null;
-
-		int transactionPosition;
-		for (transactionPosition=0; transactionPosition<txs.size(); transactionPosition++) { if (txs.get(transactionPosition).equals(chainAndTxid.getTxid())) break; }
-		if (transactionPosition == txs.size()) return null;
-
-		return new ChainAndLocationData(chainAndTxid.getChain(), blockHeight, transactionPosition, chainAndTxid.getTxoIndex());
-	}
-
-	@SuppressWarnings("unchecked")
+	@Nullable
 	@Override
 	public DidBtcrData getDidBtcrData(ChainAndTxid chainAndTxid) throws IOException {
 
-		JsonRpcHttpClient btcdRpcClient = chainAndTxid.getChain() == Chain.MAINNET ? this.btcdRpcClientMainnet : this.btcdRpcClientTestnet;
+		BitcoinJSONRPCClient btcdRpcClient = getBitcoinRpcClient(chainAndTxid.getChain());
 
 		// retrieve transaction data
 
-		LinkedHashMap<String, Object> getrawtransaction_result;
-
-		try {
-
-			getrawtransaction_result = btcdRpcClient.invoke("getrawtransaction", new Object[] { chainAndTxid.getTxid(), 1 }, LinkedHashMap.class);
-		} catch (IOException ex) {
-
-			throw ex;
-		} catch (Throwable ex) {
-
-			throw new IOException("getrawtransaction() exception: " + ex.getMessage(), ex);
-		}
+		BitcoindRpcClient.RawTransaction rawTransaction = btcdRpcClient.getRawTransaction(chainAndTxid.getTxid());
+		Preconditions.checkNotNull(rawTransaction, "RPC Error: Cannot get the transaction!");
 
 		// find input script pub key
 
 		String inputScriptPubKey = null;
 
-		ArrayList<Object> vIn = (ArrayList<Object>) getrawtransaction_result.get("vin");
-		if (vIn == null || vIn.size() < 1) return null;
+		List<In> vIn = rawTransaction.vIn();
+		if (vIn == null || vIn.size() < 1) {
+			return null;
+		}
 
-		for (int i=0; i<vIn.size(); i++) {
+		for (In in : vIn) {
 
-			LinkedHashMap<String, Object> in = (LinkedHashMap<String, Object>) vIn.get(i);
-
-			LinkedHashMap<String, Object> scriptSig = (LinkedHashMap<String, Object>) in.get("scriptSig");
-			if (scriptSig == null) continue;
+			Map<String, Object> scriptSig = in.scriptSig();
+			if (scriptSig == null)
+				continue;
 
 			String asm = (String) scriptSig.get("asm");
-			List<String> txinwitness = (List<String>) in.get("txinwitness");
 
-			if (asm != null && ! asm.trim().isEmpty()) {
+			Map<String, Object> mIn = mapper.convertValue(in, new TypeReference<Map<String, Object>>() {
+			});
+			List<String> txinwitness = (List<String>) ((Map) mIn.get("m")).get("txinwitness");
+
+			if (asm != null && !asm.trim().isEmpty()) {
 
 				Matcher matcher = patternAsmInputScriptPubKey.matcher(asm);
 
-				if (log.isDebugEnabled()) log.debug("IN: " + asm + " (MATCHES: " + matcher.matches() + ")");
+				if (log.isDebugEnabled())
+					log.debug("IN: " + in.scriptSig().get("asm") + " (MATCHES: " + matcher.matches() + ")");
 
 				if (matcher.matches() && matcher.groupCount() == 1) {
 
-					if (log.isDebugEnabled()) log.debug("inputScriptPubKey: " + matcher.group(1));
+					if (log.isDebugEnabled())
+						log.debug("inputScriptPubKey: " + matcher.group(1));
 
 					inputScriptPubKey = matcher.group(1);
 					break;
 				}
 			} else if (txinwitness != null && txinwitness.size() == 2) {
 
-				//Get the second witness push -> pubKey
+				// Get the second witness push -> pubKey
 				inputScriptPubKey = txinwitness.get(1);
 				break;
 			} else {
@@ -252,232 +141,204 @@ public class BTCDRPCBitcoinConnection extends AbstractBitcoinConnection implemen
 			}
 		}
 
-		if (inputScriptPubKey == null) return null;
-		if (inputScriptPubKey.length() > 66) inputScriptPubKey = inputScriptPubKey.substring(inputScriptPubKey.length() - 66);
+		if (inputScriptPubKey == null)
+			return null;
+		if (inputScriptPubKey.length() > 66)
+			inputScriptPubKey = inputScriptPubKey.substring(inputScriptPubKey.length() - 66);
 
 		// find DID DOCUMENT CONTINUATION URI
 
 		URI continuationUri = null;
 
-		ArrayList<Object> vOut = (ArrayList<Object>) getrawtransaction_result.get("vout");
-		if (vOut == null || vOut.size() < 1) return null;
+		List<Out> vOut = rawTransaction.vOut();
+		if (vOut == null || vOut.size() < 1)
+			return null;
 
-		for (int i=0; i<vOut.size(); i++) {
+		for (Out out : vOut) {
 
-			LinkedHashMap<String, Object> out = (LinkedHashMap<String, Object>) vOut.get(i);
+			if (out.scriptPubKey() != null && out.scriptPubKey().asm() != null) {
 
-			LinkedHashMap<String, Object> scriptPubKey = (LinkedHashMap<String, Object>) out.get("scriptPubKey");
-			if (scriptPubKey == null) continue;
+				Matcher matcher = patternAsmContinuationUri.matcher(out.scriptPubKey().asm());
 
-			String asm = (String) scriptPubKey.get("asm");
-			if (asm == null) continue;
+				if (log.isDebugEnabled())
+					log.debug("OUT: " + out.scriptPubKey().asm() + " (MATCHES: " + matcher.matches() + ")");
 
-			Matcher matcher = patternAsmContinuationUri.matcher(asm);
+				if (matcher.matches() && matcher.groupCount() == 1) {
 
-			if (log.isDebugEnabled()) log.debug("OUT: " + asm + " (MATCHES: " + matcher.matches() + ")");
+					if (log.isDebugEnabled())
+						log.debug("continuationUri: " + matcher.group(1));
 
-			if (matcher.matches() && matcher.groupCount() == 1) {
+					try {
 
-				if (log.isDebugEnabled()) log.debug("continuationUri: " + matcher.group(1));
+						continuationUri = URI.create(
+								new String(Hex.decodeHex(matcher.group(1).toCharArray()), StandardCharsets.UTF_8));
+						break;
+					} catch (DecoderException ignored) {
 
-				try {
-
-					continuationUri = URI.create(new String(Hex.decodeHex(matcher.group(1).toCharArray()), "UTF-8"));
-					break;
-				} catch (UnsupportedEncodingException | DecoderException ex) {
-
-					continue;
+					}
 				}
+			}
+		}
+
+		// Find change address
+
+		String addr = null;
+		for (Out out : vOut) {
+			if (!"nulldata".equals(out.scriptPubKey().type())) {
+				addr = out.scriptPubKey().addresses().get(0);
 			}
 		}
 
 		// find spent in tx
 
-		ChainAndTxid spentInChainAndTxid = null;
+		Map.Entry<ChainAndTxid, Boolean> result = findSpentInChainAndTxidWithDeactivation(addr, chainAndTxid.getTxid());
 
-		spentInTxid: for (int i=0; i<vOut.size(); i++) {
+		// find transaction lock time
 
-			LinkedHashMap<String, Object> out = (LinkedHashMap<String, Object>) vOut.get(i);
+		long transactionLockTime = rawTransaction.lockTime();
 
-			LinkedHashMap<String, Object> scriptPubKey = (LinkedHashMap<String, Object>) out.get("scriptPubKey");
-			if (scriptPubKey == null) continue;
+		// done
 
-			ArrayList<String> addresses = (ArrayList<String>) scriptPubKey.get("addresses");
-			if (addresses == null) continue;
+		return new DidBtcrData(result == null ? null : result.getKey(), inputScriptPubKey, continuationUri,
+				transactionLockTime, result == null ? false : result.getValue());
+	}
 
-			for (int ii=0; ii<addresses.size(); ii++) {
+	@Nullable
+	public Map.Entry<ChainAndTxid, Boolean> findSpentInChainAndTxidWithDeactivation(String address, String latestTx) {
+		Preconditions.checkArgument(StringUtils.isNotEmpty(address));
+		List<AddressRelatedTx> addressRelatedTxList = searchRawTransactions(address, 0, 100, 1, false, null);
+		boolean correctTX = false;
+		boolean latestTX = false;
+		for (AddressRelatedTx atx : addressRelatedTxList) {
+			if (!correctTX) {
+				latestTX = latestTx.equals(atx.getTxid());
+			}
+			if (!correctTX && !latestTX) {
+				continue;
+			}
+			if (!correctTX) {
+				correctTX = true;
+				continue;
+			}
 
-				String address = addresses.get(ii);
-				if (log.isDebugEnabled()) log.debug("SEARCH OUT: address: " + address);
+			int txoindex = 0;
+			for (AddressRelatedTx.Vin in : atx.getVin()) {
+				for (String addr : in.getPrevOut().getAddresses()) {
+					if (address.equals(addr)) {
 
-				// find transactions using this address
-
-				ArrayList<Object> searchrawtransactions_result;
-
-				try {
-
-					searchrawtransactions_result = btcdRpcClient.invoke("searchrawtransactions", new Object[] { address, 1 }, ArrayList.class);
-				} catch (IOException ex) {
-
-					throw ex;
-				} catch (Throwable ex) {
-
-					throw new IOException("searchrawtransactions() exception: " + ex.getMessage(), ex);
+						ChainAndTxid chainAndTxid = new ChainAndTxid(chain, atx.getTxid(), txoindex);
+						boolean deactivated = checkDeactivation(atx);
+						return new AbstractMap.SimpleEntry<>(chainAndTxid, deactivated);
+					}
 				}
+				txoindex++;
+			}
+		}
+		return null;
+	}
 
-				// search transactions to see if they spent the address
+	public List<AddressRelatedTx> searchRawTransactions(String address, int skip, int count, int vinextra,
+			boolean reverse, String[] filteraddrs) {
 
-				for (int iii=0; iii<searchrawtransactions_result.size(); iii++) {
+		Preconditions.checkNotNull(address, "Given target address is null!");
+		Preconditions.checkNotNull(bitcoindRpcClient, "Bitcoind client is null");
+		Preconditions.checkArgument(skip >= 0, "Skip count must be >= 0, argument was %s", skip);
+		Preconditions.checkArgument(count > 0, "TX count must be > 0, argument was %s", count);
+		Preconditions.checkArgument(vinextra == 0 || vinextra == 1, "Vin extra must be 0 or 1, argument was %s",
+				vinextra);
 
-					LinkedHashMap<String, Object> outTx = (LinkedHashMap<String, Object>) searchrawtransactions_result.get(iii);
-					String outTxid = (String) outTx.get("txid");
+		log.info(
+				"Request received for searchRawTransactions. \nAddress: {}, skip {}, count {}, vinextra {}, reverse {}, filteraddrs {}",
+				address, skip, count, vinextra, reverse, Arrays.toString(filteraddrs));
 
-					if (log.isDebugEnabled()) log.debug("SEARCH OUT: transaction: " + outTxid);
+		Object searchrawtransactions = bitcoindRpcClient.query("searchrawtransactions", address, 1, skip, count,
+				vinextra, reverse, filteraddrs);
 
-					String outInputScriptPubKey = null;
-					int outTxIndex = 0;
-					String outInTxid = null;
-					Integer outInVout = null;
+		return mapper.convertValue(searchrawtransactions, new TypeReference<List<AddressRelatedTx>>() {
+		});
+	}
 
-					ArrayList<Object> outTxvIn = (ArrayList<Object>) outTx.get("vin");
-					if (outTxvIn == null || outTxvIn.size() < 1) return null;
+	private static boolean checkDeactivation(AddressRelatedTx atx) {
+		if (atx.getVout().size() > 2) {
+			throw new IllegalArgumentException("Invalid BTCR-TX format");
+		}
+		return atx.getVout().size() == 1;
+	}
 
-					for (; outTxIndex<outTxvIn.size(); outTxIndex++) {
+	public Map<String, Long> findUnspents(String address) {
+		return this.findUnspents(address, 0, 100, false);
+	}
 
-						LinkedHashMap<String, Object> outTxIn = (LinkedHashMap<String, Object>) outTxvIn.get(outTxIndex);
+	public Map<String, Long> findUnspents(String address, int skip, int count, boolean reverse) {
+		Preconditions.checkState(!legacy);
+		log.info("Request received for finding UTXOs. \nAddress: {}, skip {}, count {}, reverse {}", address, skip,
+				count, reverse);
+		List<AddressRelatedTx> addRelTxs = searchRawTransactions(address, skip, count, 1, reverse, null);
+		log.debug("{} TX found with for the address {}", addRelTxs::size, () -> address);
+		List<String> txins = new ArrayList<>();
+		Map<String, Long> txouts = new LinkedHashMap<>();
 
-						outInTxid = (String) outTxIn.get("txid");
-						if (log.isDebugEnabled()) log.debug("SEARCH OUT: outInTxid: " + outInTxid);
-						if (outInTxid == null) continue;
-
-						outInVout = (Integer) outTxIn.get("vout");
-						if (log.isDebugEnabled()) log.debug("SEARCH OUT: outInVout: " + outInVout);
-						if (outInVout == null) continue;
-
-						LinkedHashMap<String, Object> scriptSig = (LinkedHashMap<String, Object>) outTxIn.get("scriptSig");
-						if (scriptSig == null) continue;
-
-						String asm = (String) scriptSig.get("asm");
-						if (asm == null) continue;
-
-						Matcher matcher = patternAsmInputScriptPubKey.matcher(asm);
-
-						if (log.isDebugEnabled()) log.debug("SEARCH OUT: IN: " + asm + " (MATCHES: " + matcher.matches() + ")");
-
-						if (matcher.matches() && matcher.groupCount() == 1) {
-
-							if (log.isDebugEnabled()) log.debug("SEARCH OUT: outInputScriptPubKey: " + matcher.group(1));
-
-							outInputScriptPubKey = matcher.group(1);
-							break;
+		for (AddressRelatedTx atx : addRelTxs) {
+			for (AddressRelatedTx.Vout out : atx.getVout()) {
+				if (out.getScriptPubKey() != null && out.getScriptPubKey().getAddresses() != null) {
+					for (String addr : out.getScriptPubKey().getAddresses()) {
+						if (address.equals(addr)) {
+							txouts.put(atx.getTxid(), out.getOutIndex());
 						}
 					}
-
-					if (outInputScriptPubKey == null) continue;
-					if (outInputScriptPubKey.length() > 66) outInputScriptPubKey = outInputScriptPubKey.substring(outInputScriptPubKey.length() - 66);
-
-					if (address.equals(pubKeyToAddress(chainAndTxid.getChain(), outInputScriptPubKey)) && chainAndTxid.getTxid().equals(outInTxid) && i == outInVout.intValue()) {
-
-						spentInChainAndTxid = new ChainAndTxid(chainAndTxid.getChain(), outTxid, outTxIndex);
-						break spentInTxid;
+				}
+			}
+			for (AddressRelatedTx.Vin in : atx.getVin()) {
+				for (String addr : in.getPrevOut().getAddresses()) {
+					if (address.equals(addr)) {
+						txins.add(in.getTxid());
 					}
 				}
 			}
 		}
 
-		// find transaction lock time
+		txins.forEach(txouts::remove);
 
-		Number number = (Number) getrawtransaction_result.get("time");
-		if (number == null) return null;
+		Map<String, Long> utxos = new LinkedHashMap<>();
 
-		long transactionTime = number.longValue();
-
-		// done
-
-		return new DidBtcrData(spentInChainAndTxid, inputScriptPubKey, continuationUri, transactionTime);
-	}
-
-	/*
-	 * Helper methods
-	 */
-
-	private static JsonRpcHttpClient btcdRpcClient(URL rpcUrl, String rpcUser, String rpcPass) {
-
-		JsonRpcHttpClient btcdRpcClient = new JsonRpcHttpClient(rpcUrl);
-		Map<String, String> headers = new HashMap<String, String> (btcdRpcClient.getHeaders());
-		headers.put("Authorization", "Basic " + Base64.getEncoder().encodeToString((rpcUser + ":" + rpcPass).getBytes()));
-		btcdRpcClient.setHeaders(headers);
-
-		return btcdRpcClient;
-	}
-
-	private static JsonRpcHttpClient btcdRpcClient(URL rpcUrl) {
-
-		return btcdRpcClient(rpcUrl, DEFAULT_RPC_USER, DEFAULT_RPC_PASS);
-	}
-
-	private static String pubKeyToAddress(Chain chain, String pubKey) throws IOException {
-
-		NetworkParameters params = null;
-
-		if (Chain.MAINNET == chain) params = MainNetParams.get();
-		if (Chain.TESTNET == chain) params = TestNet3Params.get();
-		if (params == null) throw new IllegalArgumentException("Unknown chain " + chain + " for public key " + pubKey);
-
-		ECKey eckey;
-
-		try {
-
-			eckey = ECKey.fromPublicOnly(Hex.decodeHex(pubKey.toCharArray()));
-		} catch (DecoderException ex) {
-
-			throw new IOException("Cannot decode public key " + pubKey + ": " + ex.getMessage(), ex);
+		for (AddressRelatedTx atx : addRelTxs) {
+			if (txouts.containsKey(atx.getTxid())) {
+				utxos.put(atx.getHex(), txouts.get(atx.getTxid()));
+			}
 		}
 
-		return LegacyAddress.fromPubKeyHash(params, eckey.getPubKeyHash()).toBase58();
+		return utxos;
 	}
 
-	/*
-	 * Getters and setters
-	 */
+	@Nullable
+	public ChainAndTxid findSpentInChainAndTxid(String address, String latestTx) {
+		Preconditions.checkArgument(StringUtils.isNotEmpty(address));
+		List<AddressRelatedTx> addressRelatedTxList = searchRawTransactions(address, 0, 100, 1, false, null);
+		boolean correctTX = false;
+		boolean latestTX = false;
+		for (AddressRelatedTx atx : addressRelatedTxList) {
+			if (!correctTX) {
+				latestTX = latestTx.equals(atx.getTxid());
+			}
+			if (!correctTX && !latestTX) {
+				continue;
+			}
+			if (!correctTX) {
+				correctTX = true;
+				continue;
+			}
 
-	public JsonRpcHttpClient getBtcdRpcClientMainnet() {
+			int txoindex = 0;
+			for (AddressRelatedTx.Vin in : atx.getVin()) {
+				for (String addr : in.getPrevOut().getAddresses()) {
+					if (address.equals(addr)) {
 
-		return this.btcdRpcClientMainnet;
-	}
-
-	public void setBtcdRpcClientMainnet(JsonRpcHttpClient btcdRpcClientMainnet) {
-
-		this.btcdRpcClientMainnet = btcdRpcClientMainnet;
-	}
-
-	public void setRpcUrlMainnet(URL rpcUrlMainnet) {
-
-		this.setBtcdRpcClientMainnet(btcdRpcClient(rpcUrlMainnet));
-	}
-
-	public void setRpcUrlMainnet(String rpcUrlMainnet) throws MalformedURLException {
-
-		this.setRpcUrlMainnet(new URL(rpcUrlMainnet));
-	}
-
-	public JsonRpcHttpClient getBtcdRpcClientTestnet() {
-
-		return this.btcdRpcClientTestnet;
-	}
-
-	public void setBtcdRpcClientTestnet(JsonRpcHttpClient btcdRpcClientTestnet) {
-
-		this.btcdRpcClientTestnet = btcdRpcClientTestnet;
-	}
-
-	public void setRpcUrlTestnet(URL rpcUrlTestnet) {
-
-		this.setBtcdRpcClientTestnet(btcdRpcClient(rpcUrlTestnet));
-	}
-
-	public void setRpcUrlTestnet(String rpcUrlTestnet) throws MalformedURLException {
-
-		this.setRpcUrlTestnet(new URL(rpcUrlTestnet));
+						return new ChainAndTxid(chain, atx.getTxid(), txoindex);
+					}
+				}
+				txoindex++;
+			}
+		}
+		return null;
 	}
 }
