@@ -2,6 +2,8 @@ package info.weboftrust.btctxlookup.bitcoinconnection;
 
 import java.io.IOException;
 
+import javax.annotation.Nullable;
+
 import info.weboftrust.btctxlookup.Chain;
 import info.weboftrust.btctxlookup.ChainAndLocationData;
 import info.weboftrust.btctxlookup.ChainAndTxid;
@@ -9,7 +11,8 @@ import info.weboftrust.btctxlookup.ChainAndTxid;
 public abstract class AbstractBitcoinConnection implements BitcoinConnection {
 
 	@Override
-	public ChainAndTxid lookupChainAndTxid(Chain chain, int blockHeight, int transactionPosition, int txoIndex) throws IOException {
+	public ChainAndTxid lookupChainAndTxid(Chain chain, int blockHeight, int transactionPosition, int txoIndex)
+			throws IOException {
 
 		return this.lookupChainAndTxid(new ChainAndLocationData(chain, blockHeight, transactionPosition, txoIndex));
 	}
@@ -32,15 +35,16 @@ public abstract class AbstractBitcoinConnection implements BitcoinConnection {
 		return this.lookupChainAndLocationData(new ChainAndTxid(chain, txid));
 	}
 
-
+	@Nullable
 	@Override
 	public String toTxref(ChainAndTxid chainAndTxid) throws IOException {
 
 		ChainAndLocationData chainAndLocationData = this.lookupChainAndLocationData(chainAndTxid);
-		if (chainAndLocationData == null) return null;
+		if (chainAndLocationData == null) {
+			return null;
+		}
 
-		String txref = ChainAndLocationData.txrefEncode(chainAndLocationData);
-		return txref;
+		return ChainAndLocationData.txrefEncode(chainAndLocationData);
 	}
 
 	@Override
@@ -53,8 +57,6 @@ public abstract class AbstractBitcoinConnection implements BitcoinConnection {
 	public ChainAndTxid fromTxref(String txref) throws IOException {
 
 		ChainAndLocationData chainAndLocationData = ChainAndLocationData.txrefDecode(txref);
-		if (chainAndLocationData == null) throw new IllegalArgumentException("Could not decode txref " + txref);
-
 		return this.lookupChainAndTxid(chainAndLocationData);
 	}
 }
