@@ -9,16 +9,25 @@ import info.weboftrust.btctxlookup.DidBtcrData;
 
 public interface BitcoinConnection {
 
-	public ChainAndTxid lookupChainAndTxid(ChainAndLocationData chainAndLocationData) throws IOException;
-	public ChainAndTxid lookupChainAndTxid(Chain chain, int blockHeight, int transactionPosition, int txoIndex) throws IOException;
-	public ChainAndTxid lookupChainAndTxid(Chain chain, int blockHeight, int transactionPosition) throws IOException;
-	public ChainAndLocationData lookupChainAndLocationData(ChainAndTxid chainAndTxid) throws IOException;
-	public ChainAndLocationData lookupChainAndLocationData(Chain chain, String txid, int txoIndex) throws IOException;
-	public ChainAndLocationData lookupChainAndLocationData(Chain chain, String txid) throws IOException;
+	ChainAndTxid lookupChainAndTxid(ChainAndLocationData chainAndLocationData) throws IOException;
 
-	public String toTxref(ChainAndTxid chainAndTxid) throws IOException;
-	public String toTxref(Chain chain, String txid) throws IOException;
-	public ChainAndTxid fromTxref(String txref) throws IOException;
+	ChainAndTxid lookupChainAndTxid(Chain chain, int blockHeight, int transactionPosition, int txoIndex)
+			throws IOException;
 
-	public DidBtcrData getDidBtcrData(ChainAndTxid chainAndTxid) throws IOException;
+	ChainAndTxid lookupChainAndTxid(Chain chain, int blockHeight, int transactionPosition) throws IOException;
+
+	ChainAndLocationData lookupChainAndLocationData(ChainAndTxid chainAndTxid) throws IOException;
+
+	ChainAndLocationData lookupChainAndLocationData(Chain chain, String txid, int txoIndex) throws IOException;
+
+	ChainAndLocationData lookupChainAndLocationData(Chain chain, String txid) throws IOException;
+
+	String toTxref(ChainAndTxid chainAndTxid) throws IOException;
+
+	String toTxref(Chain chain, String txid) throws IOException;
+
+	ChainAndTxid fromTxref(String txref) throws IOException;
+
+	DidBtcrData getDidBtcrData(ChainAndTxid chainAndTxid) throws IOException;
+
 }

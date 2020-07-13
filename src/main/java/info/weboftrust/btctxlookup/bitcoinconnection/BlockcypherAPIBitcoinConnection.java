@@ -7,7 +7,6 @@ import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Iterator;
 import java.util.TimeZone;
 
 import org.apache.commons.codec.DecoderException;
@@ -17,23 +16,22 @@ import org.bitcoinj.script.Script;
 import org.bitcoinj.script.ScriptChunk;
 import org.bitcoinj.script.ScriptException;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
+import com.google.common.base.Preconditions;
+import com.google.gson.*;
 
-import info.weboftrust.btctxlookup.Chain;
-import info.weboftrust.btctxlookup.ChainAndLocationData;
-import info.weboftrust.btctxlookup.ChainAndTxid;
-import info.weboftrust.btctxlookup.DidBtcrData;
+import info.weboftrust.btctxlookup.*;
 
+/**
+ * TODO
+ */
 public class BlockcypherAPIBitcoinConnection extends AbstractBitcoinConnection implements BitcoinConnection {
-
-	private static final BlockcypherAPIBitcoinConnection instance = new BlockcypherAPIBitcoinConnection();
 
 	public static final SimpleDateFormat DATE_FORMAT;
 	public static final SimpleDateFormat DATE_FORMAT_MILLIS;
+	protected static final Gson gson = new Gson();
+	private static final BlockcypherAPIBitcoinConnection instance = new BlockcypherAPIBitcoinConnection();
+
+	private static final BitcoinClientID CLIENT_ID = BitcoinClientID.BLOCKCYPHERAPI;
 
 	static {
 
@@ -48,6 +46,10 @@ public class BlockcypherAPIBitcoinConnection extends AbstractBitcoinConnection i
 
 	}
 
+	public static BitcoinClientID getClientId() {
+		return CLIENT_ID;
+	}
+
 	public static BlockcypherAPIBitcoinConnection get() {
 
 		return instance;
@@ -58,15 +60,20 @@ public class BlockcypherAPIBitcoinConnection extends AbstractBitcoinConnection i
 
 		URI uri;
 		if (chainAndLocationData.getChain() == Chain.MAINNET) {
-			uri = URI.create("https://api.blockcypher.com/v1/btc/main/blocks/" + chainAndLocationData.getLocationData().getBlockHeight() + "?txstart=" + chainAndLocationData.getLocationData().getTransactionPosition() + "&limit=1");
+			uri = URI.create("https://api.blockcypher.com/v1/btc/main/blocks/"
+					+ chainAndLocationData.getLocationData().getBlockHeight() + "?txstart="
+					+ chainAndLocationData.getLocationData().getTransactionPosition() + "&limit=1");
 		} else {
-			uri = URI.create("https://api.blockcypher.com/v1/btc/test3/blocks/" + chainAndLocationData.getLocationData().getBlockHeight() + "?txstart=" + chainAndLocationData.getLocationData().getTransactionPosition() + "&limit=1");
+			uri = URI.create("https://api.blockcypher.com/v1/btc/test3/blocks/"
+					+ chainAndLocationData.getLocationData().getBlockHeight() + "?txstart="
+					+ chainAndLocationData.getLocationData().getTransactionPosition() + "&limit=1");
 		}
 
 		JsonObject txData = retrieveJson(uri);
 		String txid = txData.get("txids").getAsJsonArray().get(0).getAsString();
 
-		return new ChainAndTxid(chainAndLocationData.getChain(), txid, chainAndLocationData.getLocationData().getTxoIndex());
+		return new ChainAndTxid(chainAndLocationData.getChain(), txid,
+				chainAndLocationData.getLocationData().getTxoIndex());
 	}
 
 	@Override
@@ -83,8 +90,10 @@ public class BlockcypherAPIBitcoinConnection extends AbstractBitcoinConnection i
 		int blockHeight = txData.get("block_height").getAsInt();
 		int transactionPosition = txData.get("block_index").getAsInt();
 
-		if (blockHeight == -1 || transactionPosition == -1) return null;
-		return new ChainAndLocationData(chainAndTxid.getChain(), blockHeight, transactionPosition, chainAndTxid.getTxoIndex());
+		if (blockHeight == -1 || transactionPosition == -1)
+			return null;
+		return new ChainAndLocationData(chainAndTxid.getChain(), blockHeight, transactionPosition,
+				chainAndTxid.getTxoIndex());
 	}
 
 	@Override
@@ -105,16 +114,18 @@ public class BlockcypherAPIBitcoinConnection extends AbstractBitcoinConnection i
 
 		String inputScriptPubKey = null;
 
-		for (Iterator<JsonElement> i = ((JsonArray) txData.get("inputs")).iterator(); i.hasNext(); ) {
+		for (final JsonElement element : (JsonArray) txData.get("inputs")) {
 
-			JsonObject input = i.next().getAsJsonObject();
+			JsonObject input = element.getAsJsonObject();
 			JsonElement scriptType = input.get("script_type");
-			if (scriptType == null || ! scriptType.isJsonPrimitive()) continue;
+			if (scriptType == null || !scriptType.isJsonPrimitive())
+				continue;
 
 			if ("pay-to-pubkey-hash".equals(scriptType.getAsString())) {
 
 				JsonElement script = input.get("script");
-				if (script == null || ! script.isJsonPrimitive()) continue;
+				if (script == null || !script.isJsonPrimitive())
+					continue;
 
 				Script payToPubKeyHashScript;
 
@@ -126,12 +137,14 @@ public class BlockcypherAPIBitcoinConnection extends AbstractBitcoinConnection i
 					throw new IOException("Cannot decode script " + script.getAsString() + ": " + ex.getMessage(), ex);
 				}
 
-				inputScriptPubKey = Hex.encodeHexString(payToPubKeyHashScript.getChunks().get(1).data);
+				inputScriptPubKey = Hex
+						.encodeHexString(Preconditions.checkNotNull(payToPubKeyHashScript.getChunks().get(1).data));
 				break;
 			} else if ("pay-to-witness-pubkey-hash".equals(scriptType.getAsString())) {
 
 				JsonElement witness = input.get("witness");
-				if (witness == null || ! witness.isJsonArray()) continue;
+				if (witness == null || !witness.isJsonArray())
+					continue;
 
 				inputScriptPubKey = witness.getAsJsonArray().get(1).getAsString();
 				break;
@@ -141,20 +154,24 @@ public class BlockcypherAPIBitcoinConnection extends AbstractBitcoinConnection i
 			}
 		}
 
-		if (inputScriptPubKey == null) return null;
-		if (inputScriptPubKey.length() > 66) inputScriptPubKey = inputScriptPubKey.substring(inputScriptPubKey.length() - 66);
+		if (inputScriptPubKey == null)
+			return null;
+		if (inputScriptPubKey.length() > 66)
+			inputScriptPubKey = inputScriptPubKey.substring(inputScriptPubKey.length() - 66);
 
 		// find DID DOCUMENT CONTINUATION URI
 
 		URI continuationUri = null;
 
-		for (Iterator<JsonElement> i = ((JsonArray) txData.get("outputs")).iterator(); i.hasNext(); ) {
+		for (final JsonElement element : (JsonArray) txData.get("outputs")) {
 
-			JsonObject output = i.next().getAsJsonObject();
+			JsonObject output = element.getAsJsonObject();
 			JsonElement script = output.get("script");
 			JsonElement scriptType = output.get("script_type");
-			if (script == null || ! script.isJsonPrimitive()) continue;
-			if (scriptType == null || ! scriptType.isJsonPrimitive()) continue;
+			if (script == null || !script.isJsonPrimitive())
+				continue;
+			if (scriptType == null || !scriptType.isJsonPrimitive())
+				continue;
 
 			if ("null-data".equals(scriptType.getAsString())) {
 
@@ -168,10 +185,12 @@ public class BlockcypherAPIBitcoinConnection extends AbstractBitcoinConnection i
 					throw new IOException("Cannot decode script " + script.getAsString() + ": " + ex.getMessage(), ex);
 				}
 
-				ScriptChunk scriptChunk = nullDataScript.getChunks().size() == 2 ? nullDataScript.getChunks().get(1) : null;
+				ScriptChunk scriptChunk = nullDataScript.getChunks().size() == 2 ? nullDataScript.getChunks().get(1)
+						: null;
 				byte[] data = scriptChunk == null ? null : scriptChunk.data;
 
-				if (data == null || data.length < 1) throw new IOException("Cannot find data in script " + script.getAsString());
+				if (data == null || data.length < 1)
+					throw new IOException("Cannot find data in script " + script.getAsString());
 
 				continuationUri = URI.create(new String(data, StandardCharsets.UTF_8));
 				break;
@@ -183,13 +202,14 @@ public class BlockcypherAPIBitcoinConnection extends AbstractBitcoinConnection i
 		int outTxid = -1;
 		ChainAndTxid spentInChainAndTxid = null;
 
-		for (Iterator<JsonElement> i = ((JsonArray) txData.get("outputs")).iterator(); i.hasNext(); ) {
+		for (final JsonElement element : (JsonArray) txData.get("outputs")) {
 
 			outTxid++;
 
-			JsonObject output = i.next().getAsJsonObject();
+			JsonObject output = element.getAsJsonObject();
 			JsonElement spentBy = output.get("spent_by");
-			if (spentBy == null || ! spentBy.isJsonPrimitive()) continue;
+			if (spentBy == null || !spentBy.isJsonPrimitive())
+				continue;
 
 			spentInChainAndTxid = new ChainAndTxid(chainAndTxid.getChain(), spentBy.getAsString(), outTxid);
 			break;
@@ -198,12 +218,12 @@ public class BlockcypherAPIBitcoinConnection extends AbstractBitcoinConnection i
 		// find transaction time
 
 		JsonPrimitive received = (JsonPrimitive) txData.get("received");
-		if (received == null) return null;
+		if (received == null)
+			return null;
 
 		long transactionTime;
 
 		try {
-
 			transactionTime = DATE_FORMAT.parse(received.getAsString()).getTime() / 1000L;
 		} catch (ParseException ex) {
 
@@ -212,7 +232,8 @@ public class BlockcypherAPIBitcoinConnection extends AbstractBitcoinConnection i
 				transactionTime = DATE_FORMAT_MILLIS.parse(received.getAsString()).getTime() / 1000L;
 			} catch (ParseException ex2) {
 
-				throw new IOException("Cannot parse receive date '" + received.getAsString() + "': " + ex2.getMessage(), ex2);
+				throw new IOException("Cannot parse receive date '" + received.getAsString() + "': " + ex2.getMessage(),
+						ex2);
 			}
 		}
 
@@ -220,12 +241,6 @@ public class BlockcypherAPIBitcoinConnection extends AbstractBitcoinConnection i
 
 		return new DidBtcrData(spentInChainAndTxid, inputScriptPubKey, continuationUri, transactionTime);
 	}
-
-	/*
-	 * Helper methods
-	 */
-
-	protected static final Gson gson = new Gson();
 
 	protected static JsonObject retrieveJson(URI uri) throws IOException {
 
