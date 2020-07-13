@@ -5,8 +5,8 @@ import design.contract.txref.Txref;
 
 public class ChainAndLocationData {
 
-	private Chain chain;
-	private LocationData locationData;
+	private final Chain chain;
+	private final LocationData locationData;
 
 	public ChainAndLocationData(Chain chain, LocationData locationData) {
 
@@ -30,46 +30,13 @@ public class ChainAndLocationData {
 	 * Getters
 	 */
 
-	public Chain getChain() { 
-
-		return this.chain;
-	}
-
-	public LocationData getLocationData() { 
-
-		return this.locationData;
-	}
-
-	/*
-	 * Helper methods
-	 */
-
-	public static String txrefEncode(Chain chain, int blockHeight, int transactionPosition, int txoIndex, boolean forceExtended) {
+	public static String txrefEncode(Chain chain, int blockHeight, int transactionPosition, int txoIndex,
+			boolean forceExtended) {
 
 		if (Chain.MAINNET == chain)
 			return Txref.encode(blockHeight, transactionPosition, txoIndex, forceExtended);
-		else if (Chain.TESTNET == chain)
+		else if (Chain.TESTNET == chain || Chain.REGTESTNET == chain)
 			return Txref.encodeTestnet(blockHeight, transactionPosition, txoIndex, forceExtended);
-		else
-			throw new IllegalArgumentException("Unknown chain: " + chain);
-	}
-
-	public static String txrefEncode(Chain chain, int blockHeight, int transactionPosition, int txoIndex) {
-
-		if (Chain.MAINNET == chain)
-			return Txref.encode(blockHeight, transactionPosition, txoIndex);
-		else if (Chain.TESTNET == chain)
-			return Txref.encodeTestnet(blockHeight, transactionPosition, txoIndex);
-		else
-			throw new IllegalArgumentException("Unknown chain: " + chain);
-	}
-
-	public static String txrefEncode(Chain chain, int blockHeight, int transactionPosition) {
-
-		if (Chain.MAINNET == chain)
-			return Txref.encode(blockHeight, transactionPosition);
-		else if (Chain.TESTNET == chain)
-			return Txref.encodeTestnet(blockHeight, transactionPosition);
 		else
 			throw new IllegalArgumentException("Unknown chain: " + chain);
 	}
@@ -77,9 +44,46 @@ public class ChainAndLocationData {
 	public static String txrefEncode(ChainAndLocationData chainAndLocationData) {
 
 		if (chainAndLocationData.getLocationData().getTxoIndex() == -1)
-			return txrefEncode(chainAndLocationData.getChain(), chainAndLocationData.getLocationData().getBlockHeight(), chainAndLocationData.getLocationData().getTransactionPosition());
+			return txrefEncode(chainAndLocationData.getChain(), chainAndLocationData.getLocationData().getBlockHeight(),
+					chainAndLocationData.getLocationData().getTransactionPosition());
 		else
-			return txrefEncode(chainAndLocationData.getChain(), chainAndLocationData.getLocationData().getBlockHeight(), chainAndLocationData.getLocationData().getTransactionPosition(), chainAndLocationData.getLocationData().getTxoIndex());
+			return txrefEncode(chainAndLocationData.getChain(), chainAndLocationData.getLocationData().getBlockHeight(),
+					chainAndLocationData.getLocationData().getTransactionPosition(),
+					chainAndLocationData.getLocationData().getTxoIndex());
+	}
+
+	/*
+	 * Helper methods
+	 */
+
+	public LocationData getLocationData() {
+
+		return this.locationData;
+	}
+
+	public static String txrefEncode(Chain chain, int blockHeight, int transactionPosition) {
+
+		if (Chain.MAINNET == chain)
+			return Txref.encode(blockHeight, transactionPosition);
+		else if (Chain.TESTNET == chain || Chain.REGTESTNET == chain)
+			return Txref.encodeTestnet(blockHeight, transactionPosition);
+		else
+			throw new IllegalArgumentException("Unknown chain: " + chain);
+	}
+
+	public Chain getChain() {
+
+		return this.chain;
+	}
+
+	public static String txrefEncode(Chain chain, int blockHeight, int transactionPosition, int txoIndex) {
+
+		if (Chain.MAINNET == chain)
+			return Txref.encode(blockHeight, transactionPosition, txoIndex);
+		else if (Chain.TESTNET == chain || Chain.REGTESTNET == chain)
+			return Txref.encodeTestnet(blockHeight, transactionPosition, txoIndex);
+		else
+			throw new IllegalArgumentException("Unknown chain: " + chain);
 	}
 
 	public static ChainAndLocationData txrefDecode(String txref) {
@@ -87,29 +91,33 @@ public class ChainAndLocationData {
 		LocationData locationData = Txref.decode(txref);
 		Chain chain;
 
-		if (Txref.MAGIC_BTC_MAIN == locationData.getMagicCode() || Txref.MAGIC_BTC_MAIN_EXTENDED == locationData.getMagicCode()) chain = Chain.MAINNET;
-		else if (Txref.MAGIC_BTC_TEST == locationData.getMagicCode() || Txref.MAGIC_BTC_TEST_EXTENDED == locationData.getMagicCode()) chain = Chain.TESTNET;
-		else throw new IllegalStateException("Unknown magic code: " + locationData.getMagicCode());
+		if (Txref.MAGIC_BTC_MAIN == locationData.getMagicCode()
+				|| Txref.MAGIC_BTC_MAIN_EXTENDED == locationData.getMagicCode())
+			chain = Chain.MAINNET;
+		else if (Txref.MAGIC_BTC_TEST == locationData.getMagicCode()
+				|| Txref.MAGIC_BTC_TEST_EXTENDED == locationData.getMagicCode())
+			chain = Chain.TESTNET;
+		else
+			throw new IllegalStateException("Unknown magic code: " + locationData.getMagicCode());
 
 		return new ChainAndLocationData(chain, locationData);
 	}
 
 	public boolean isExtended() {
 
-		if (Txref.MAGIC_BTC_MAIN_EXTENDED == this.getLocationData().getMagicCode() || Txref.MAGIC_BTC_TEST_EXTENDED == this.getLocationData().getMagicCode()) return true;
-		if (Txref.MAGIC_BTC_MAIN == this.getLocationData().getMagicCode() || Txref.MAGIC_BTC_TEST == this.getLocationData().getMagicCode()) return false;
+		if (Txref.MAGIC_BTC_MAIN_EXTENDED == this.locationData.getMagicCode()
+				|| Txref.MAGIC_BTC_TEST_EXTENDED == this.locationData.getMagicCode())
+			return true;
+		if (Txref.MAGIC_BTC_MAIN == this.locationData.getMagicCode()
+				|| Txref.MAGIC_BTC_TEST == this.locationData.getMagicCode())
+			return false;
 
-		throw new IllegalStateException("Unknown magic code: " + this.getLocationData().getMagicCode());
+		throw new IllegalStateException("Unknown magic code: " + this.locationData.getMagicCode());
 	}
 
 	/*
 	 * Object methods
 	 */
-
-	@Override
-	public String toString() {
-		return "ChainAndLocationData [chain=" + chain + ", locationData=" + locationData + "]";
-	}
 
 	@Override
 	public int hashCode() {
@@ -129,13 +137,19 @@ public class ChainAndLocationData {
 		if (getClass() != obj.getClass())
 			return false;
 		ChainAndLocationData other = (ChainAndLocationData) obj;
-		if (chain != other.chain)
+		if (chain != other.getChain())
 			return false;
 		if (locationData == null) {
-			if (other.locationData != null)
-				return false;
-		} else if (!locationData.equals(other.locationData))
-			return false;
-		return true;
+			return other.getLocationData() == null;
+		} else
+			return locationData.equals(other.getLocationData());
+	}
+
+	@Override
+	public String toString() {
+		return "ChainAndLocationData [chain=" + chain + ", locationData=txref:" + locationData.getTxref() + ", hrp:"
+				+ locationData.getHrp() + ", block height:" + locationData.getBlockHeight() + ", magic code:"
+				+ locationData.getMagicCode() + ", tx position:" + locationData.getTransactionPosition() + ", txoindex"
+				+ locationData.getTxoIndex() + "]";
 	}
 }
