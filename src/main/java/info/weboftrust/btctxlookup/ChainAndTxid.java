@@ -2,9 +2,14 @@ package info.weboftrust.btctxlookup;
 
 public class ChainAndTxid {
 
-	private Chain chain;
-	private String txid;
-	private int txoIndex;
+	private final Chain chain;
+	private final String txid;
+	private final int txoIndex;
+
+	public ChainAndTxid(Chain chain, String txid) {
+
+		this(chain, txid, -1);
+	}
 
 	public ChainAndTxid(Chain chain, String txid, int txoIndex) {
 
@@ -13,16 +18,11 @@ public class ChainAndTxid {
 		this.txoIndex = txoIndex;
 	}
 
-	public ChainAndTxid(Chain chain, String txid) {
-
-		this(chain, txid, -1);
-	}
-
 	/*
 	 * Getters
 	 */
 
-	public Chain getChain() { 
+	public Chain getChain() {
 
 		return this.chain;
 	}
@@ -40,11 +40,6 @@ public class ChainAndTxid {
 	/*
 	 * Object methods
 	 */
-
-	@Override
-	public String toString() {
-		return "ChainAndTxid [chain=" + chain + ", txid=" + txid + ", txoIndex=" + txoIndex + "]";
-	}
 
 	@Override
 	public int hashCode() {
@@ -65,15 +60,18 @@ public class ChainAndTxid {
 		if (getClass() != obj.getClass())
 			return false;
 		ChainAndTxid other = (ChainAndTxid) obj;
-		if (chain != other.chain)
+		if (chain != other.getChain())
 			return false;
 		if (txid == null) {
-			if (other.txid != null)
+			if (other.getTxid() != null)
 				return false;
-		} else if (!txid.equals(other.txid))
+		} else if (!txid.equals(other.getTxid()))
 			return false;
-		if (txoIndex != other.txoIndex)
-			return false;
-		return true;
+		return txoIndex == other.getTxoIndex();
+	}
+
+	@Override
+	public String toString() {
+		return "ChainAndTxid [chain=" + chain + ", txid=" + txid + ", txoIndex=" + txoIndex + "]";
 	}
 }

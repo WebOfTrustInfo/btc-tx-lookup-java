@@ -3,7 +3,9 @@ package info.weboftrust.btctxlookup;
 import info.weboftrust.btctxlookup.bitcoinconnection.BitcoinConnection;
 import info.weboftrust.btctxlookup.bitcoinconnection.BitcoindRPCBitcoinConnection;
 import junit.framework.TestCase;
+import org.junit.Ignore;
 
+@Ignore
 public class BitcoinConnectionTest extends TestCase {
 
 	private static BitcoinConnection bitcoinConnection;

@@ -14,19 +14,16 @@ public class BitcoinjSPVBitcoinConnection extends AbstractBitcoinConnection impl
 
 	protected BlockChain blockChain;
 
-	public BitcoinjSPVBitcoinConnection(BlockChain blockChain) {
-
-		this.blockChain = blockChain;
+	public BitcoinjSPVBitcoinConnection() {
+		throw new RuntimeException("Not implemented.");
 	}
 
-	public BitcoinjSPVBitcoinConnection() {
-
-		this(null);
+	public BitcoinjSPVBitcoinConnection(BlockChain blockChain) {
+		throw new RuntimeException("Not implemented.");
 	}
 
 	public static BitcoinjSPVBitcoinConnection get() {
-
-		return instance;
+		throw new RuntimeException("Not implemented.");
 	}
 
 	@Override

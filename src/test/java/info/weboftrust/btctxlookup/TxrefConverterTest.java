@@ -1,9 +1,9 @@
 package info.weboftrust.btctxlookup;
 
-import info.weboftrust.btctxlookup.Chain;
-import info.weboftrust.btctxlookup.ChainAndLocationData;
 import junit.framework.TestCase;
+import org.junit.Ignore;
 
+@Ignore
 public class TxrefConverterTest extends TestCase {
 
 	@Override

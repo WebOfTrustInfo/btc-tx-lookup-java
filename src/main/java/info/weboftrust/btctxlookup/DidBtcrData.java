@@ -2,14 +2,19 @@ package info.weboftrust.btctxlookup;
 
 import java.net.URI;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class DidBtcrData {
 
 	private final ChainAndTxid spentInChainAndTxid;
 	private final String inputScriptPubKey;
 	private final URI continuationUri;
 	private final long transactionTime;
+	@JsonIgnore
+	private boolean deactivated;
 
-	public DidBtcrData(ChainAndTxid spentInChainAndTxid, String inputScriptPubKey, URI continuationUri, long transactionTime) {
+	public DidBtcrData(ChainAndTxid spentInChainAndTxid, String inputScriptPubKey, URI continuationUri,
+			long transactionTime) {
 
 		this.spentInChainAndTxid = spentInChainAndTxid;
 		this.inputScriptPubKey = inputScriptPubKey;
@@ -17,9 +22,19 @@ public class DidBtcrData {
 		this.transactionTime = transactionTime;
 	}
 
-	public ChainAndTxid getSpentInChainAndTxid() {
+	public DidBtcrData(ChainAndTxid spentInChainAndTxid, String inputScriptPubKey, URI continuationUri,
+			long transactionTime, boolean deactivated) {
 
-		return this.spentInChainAndTxid;
+		this.spentInChainAndTxid = spentInChainAndTxid;
+		this.inputScriptPubKey = inputScriptPubKey;
+		this.continuationUri = continuationUri;
+		this.transactionTime = transactionTime;
+		this.deactivated = deactivated;
+	}
+
+	public URI getContinuationUri() {
+
+		return this.continuationUri;
 	}
 
 	public String getInputScriptPubKey() {
@@ -27,9 +42,13 @@ public class DidBtcrData {
 		return this.inputScriptPubKey;
 	}
 
-	public URI getContinuationUri() {
+	public ChainAndTxid getSpentInChainAndTxid() {
 
-		return this.continuationUri;
+		return this.spentInChainAndTxid;
+	}
+
+	public boolean isDeactivated() {
+		return deactivated;
 	}
 
 	public long getTransactionTime() {
@@ -68,22 +87,20 @@ public class DidBtcrData {
 			return false;
 		DidBtcrData other = (DidBtcrData) obj;
 		if (continuationUri == null) {
-			if (other.continuationUri != null)
+			if (other.getContinuationUri() != null)
 				return false;
-		} else if (!continuationUri.equals(other.continuationUri))
+		} else if (!continuationUri.equals(other.getContinuationUri()))
 			return false;
 		if (inputScriptPubKey == null) {
-			if (other.inputScriptPubKey != null)
+			if (other.getInputScriptPubKey() != null)
 				return false;
-		} else if (!inputScriptPubKey.equals(other.inputScriptPubKey))
+		} else if (!inputScriptPubKey.equals(other.getInputScriptPubKey()))
 			return false;
 		if (spentInChainAndTxid == null) {
-			if (other.spentInChainAndTxid != null)
+			if (other.getSpentInChainAndTxid() != null)
 				return false;
-		} else if (!spentInChainAndTxid.equals(other.spentInChainAndTxid))
+		} else if (!spentInChainAndTxid.equals(other.getSpentInChainAndTxid()))
 			return false;
-		if (transactionTime != other.transactionTime)
-			return false;
-		return true;
+		return transactionTime == other.getTransactionTime();
 	}
 }
