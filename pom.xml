@@ -1,19 +1,18 @@
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns="http://maven.apache.org/POM/4.0.0"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>info.weboftrust</groupId>
 	<artifactId>btc-tx-lookup-java</artifactId>
 	<packaging>jar</packaging>
-	<version>0.2-SNAPSHOT</version>
+	<version>0.2.0</version>
 	<name>btc-tx-lookup-java</name>
 
 	<scm>
 		<url>https://github.com/WebOfTrustInfo/btc-tx-lookup-java</url>
 		<connection>scm:git:git://github.com/WebOfTrustInfo/btc-tx-lookup-java.git</connection>
 		<developerConnection>scm:git:git@github.com:WebOfTrustInfo/btc-tx-lookup-java.git</developerConnection>
-	</scm>
+	  <tag>v0.2.0</tag>
+  </scm>
 
 	<issueManagement>
 		<url>https://github.com/WebOfTrustInfo/btc-tx-lookup-java/issues</url>
