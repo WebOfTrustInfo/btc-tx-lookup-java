@@ -47,7 +47,7 @@
 		<commons-io.version>2.6</commons-io.version>
 		<commons.lang3.version>3.10</commons.lang3.version>
 
-		<maven-source-plugin.version>3.2.0</maven-source-plugin.version>
+		<maven-source-plugin.version>3.2.1</maven-source-plugin.version>
 		<maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
 		<maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
 		<maven-dependency-plugin.version>3.1.2</maven-dependency-plugin.version>
@@ -89,7 +89,7 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>${maven-surefire-plugin.version}</version>
 				<configuration>
-					<forkMode>never</forkMode>
+					<forkCount>0</forkCount>
 				</configuration>
 			</plugin>
 			<plugin>
