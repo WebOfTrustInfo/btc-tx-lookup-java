@@ -7,7 +7,7 @@ on:
       - 'README.md'
       - 'LICENSE'
       - 'docs'
-    branches: [main]
+    branches: [github-workflows]
   workflow_dispatch:
 
 jobs:
