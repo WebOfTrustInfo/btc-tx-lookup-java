@@ -11,8 +11,9 @@
 
 	<scm>
 		<url>https://github.com/WebOfTrustInfo/btc-tx-lookup-java</url>
-		<connection>scm:git:git://github.com/WebOfTrustInfo/btc-tx-lookup-java.git</connection>
-		<developerConnection>scm:git:git@github.com:WebOfTrustInfo/btc-tx-lookup-java.git</developerConnection>
+		<connection>scm:git:https://github.com/WebOfTrustInfo/btc-tx-lookup-java.git</connection>
+		<developerConnection>scm:git:https://github.com/WebOfTrustInfo/btc-tx-lookup-java.git</developerConnection>
+		<tag>HEAD</tag>
 	</scm>
 
 	<issueManagement>
@@ -54,10 +55,19 @@
 		<maven-deploy-plugin.version>3.0.0-M1</maven-deploy-plugin.version>
 
 		<junit.version>4.13</junit.version>
+		<maven-release-plugin.version>2.5.3</maven-release-plugin.version>
 	</properties>
 
 	<build>
 		<plugins>
+			<plugin>
+				<artifactId>maven-release-plugin</artifactId>
+				<version>${maven-release-plugin.version}</version>
+				<configuration>
+					<scmCommentPrefix>[maven-release-plugin]</scmCommentPrefix>
+					<tagNameFormat>v@{project.version}</tagNameFormat>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-deploy-plugin</artifactId>
