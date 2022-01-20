@@ -37,9 +37,15 @@ jobs:
             ci/data/gh-workflows/maven-danubetech-nexus password | MAVEN_PASSWORD ;
             ci/data/gh-workflows/maven-release-workflow token | TOKEN
 
+      - name: Log env variables
+        run: |
+          echo version-minor: ${{ github.event.inputs.version-minor }}
+          echo version-major: ${{ github.event.inputs.version-major }}
+
       - name: Release to Danubetech Nexus
-        uses: qcastel/github-actions-maven-release@v1.12.25
+        uses: BernhardFuchs/docker-maven-release@master
         with:
+          skip-perform: true
           release-branch-name: main
           maven-repo-server-id: danubetech-maven-releases
           maven-repo-server-username: ${{ env.MAVEN_USERNAME }}
