@@ -2,6 +2,23 @@ name: Maven release
 
 on:
   workflow_dispatch:
+    inputs:
+      version-minor:
+        description: 'Minor version upgrade'
+        type: choice
+        required: false
+        default: "true"
+        options:
+          - "true"
+          - "false"
+      version-major:
+        description: 'Major version upgrade'
+        type: choice
+        required: false
+        default: "false"
+        options:
+          - "true"
+          - "false"
 
 jobs:
   build:
@@ -28,7 +45,8 @@ jobs:
           maven-repo-server-username: ${{ env.MAVEN_USERNAME }}
           maven-repo-server-password: ${{ env.MAVEN_PASSWORD }}
           access-token: ${{ env.TOKEN }}
-          version-minor: true
+          version-minor: ${{ github.event.inputs.version-minor }}
+          version-major: ${{ github.event.inputs.version-major }}
           maven-development-version-number: ${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}-SNAPSHOT
           maven-release-version-number: ${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.0
           git-release-bot-name: "admin-bot"
