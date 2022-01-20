@@ -3,22 +3,15 @@ name: Maven release
 on:
   workflow_dispatch:
     inputs:
-      version-minor:
-        description: 'Minor version upgrade'
+      version-core:
+        description: 'Major, Minor or Patch release'
         type: choice
-        required: false
-        default: "true"
+        required: true
+        default: 'minor'
         options:
-          - "true"
-          - "false"
-      version-major:
-        description: 'Major version upgrade'
-        type: choice
-        required: false
-        default: "false"
-        options:
-          - "true"
-          - "false"
+          - "major"
+          - "minor"
+          - "patch"
 
 jobs:
   build:
@@ -51,9 +44,9 @@ jobs:
           maven-repo-server-username: ${{ env.MAVEN_USERNAME }}
           maven-repo-server-password: ${{ env.MAVEN_PASSWORD }}
           access-token: ${{ env.TOKEN }}
-          version-minor: ${{ github.event.inputs.version-minor }}
-          version-major: ${{ github.event.inputs.version-major }}
-          maven-development-version-number: ${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}-SNAPSHOT
+          version-core: ${{ github.event.inputs.version-core }}
+          maven-development-version-format-minor: ${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}-SNAPSHOT
+          maven-development-version-format-major: ${parsedVersion.nextMajorVersion}.${parsedVersion.minorVersion}-SNAPSHOT
           maven-release-version-number: ${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.0
           git-release-bot-name: "admin-bot"
           git-release-bot-email: "admin@danubetech.com"
