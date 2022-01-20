@@ -4,7 +4,7 @@
 	<groupId>info.weboftrust</groupId>
 	<artifactId>btc-tx-lookup-java</artifactId>
 	<packaging>jar</packaging>
-	<version>0.8-SNAPSHOT</version>
+	<version>1.8-SNAPSHOT</version>
 	<name>btc-tx-lookup-java</name>
 
 	<scm>
