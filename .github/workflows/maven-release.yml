@@ -46,12 +46,12 @@ jobs:
           access-token: ${{ env.TOKEN }}
           version-core: ${{ github.event.inputs.version-core }}
           maven-development-version-format-minor: ${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}-SNAPSHOT
-          maven-development-version-format-major: ${parsedVersion.nextMajorVersion}.${parsedVersion.minorVersion}-SNAPSHOT
+          maven-development-version-format-major: ${parsedVersion.nextMajorVersion}.1-SNAPSHOT
           maven-release-version-format-minor: ${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}.0
           maven-release-version-format-major: ${parsedVersion.nextMajorVersion}.0.0
           git-release-bot-name: "admin-bot"
           git-release-bot-email: "admin@danubetech.com"
-          maven-args: "-Dmaven.javadoc.skip=true -DskipTests -DskipITs"
+          maven-args: "-Dmaven.javadoc.skip=true -DskipITs"
 
       - name: Slack notification
         if: failure()
