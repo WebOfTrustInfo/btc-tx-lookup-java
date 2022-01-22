@@ -33,7 +33,6 @@ jobs:
       - name: Release to Danubetech Nexus
         uses: BernhardFuchs/docker-maven-release@use-dynamic-input
         with:
-          skip-perform: true
           release-branch-name: main
           maven-repo-server-id: danubetech-maven-releases
           maven-repo-server-username: ${{ env.MAVEN_USERNAME }}
