@@ -41,7 +41,7 @@ jobs:
           version-core: ${{ github.event.inputs.version-core }}
           maven-development-version-format-minor: ${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}-SNAPSHOT
           maven-development-version-format-major: ${parsedVersion.nextMajorVersion}.1-SNAPSHOT
-          maven-release-version-format-minor: ${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}.0
+          maven-release-version-format-minor: ${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.0
           maven-release-version-format-major: ${parsedVersion.nextMajorVersion}.0.0
           git-release-bot-name: "admin-bot"
           git-release-bot-email: "admin@danubetech.com"
