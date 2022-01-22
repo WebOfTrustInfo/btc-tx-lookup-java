@@ -36,7 +36,7 @@ jobs:
           echo version-major: ${{ github.event.inputs.version-major }}
 
       - name: Release to Danubetech Nexus
-        uses: BernhardFuchs/docker-maven-release@master
+        uses: BernhardFuchs/docker-maven-release@use-dynamic-input
         with:
           skip-perform: true
           release-branch-name: main
