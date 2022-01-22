@@ -30,11 +30,6 @@ jobs:
             ci/data/gh-workflows/maven-danubetech-nexus password | MAVEN_PASSWORD ;
             ci/data/gh-workflows/maven-release-workflow token | TOKEN
 
-      - name: Log env variables
-        run: |
-          echo version-minor: ${{ github.event.inputs.version-minor }}
-          echo version-major: ${{ github.event.inputs.version-major }}
-
       - name: Release to Danubetech Nexus
         uses: BernhardFuchs/docker-maven-release@use-dynamic-input
         with:
