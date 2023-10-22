@@ -1,12 +1,11 @@
 package info.weboftrust.btctxlookup.bitcoinconnection;
 
-import java.io.IOException;
-
-import javax.annotation.Nullable;
-
 import info.weboftrust.btctxlookup.Chain;
 import info.weboftrust.btctxlookup.ChainAndLocationData;
 import info.weboftrust.btctxlookup.ChainAndTxid;
+
+import javax.annotation.Nullable;
+import java.io.IOException;
 
 public abstract class AbstractBitcoinConnection implements BitcoinConnection {
 

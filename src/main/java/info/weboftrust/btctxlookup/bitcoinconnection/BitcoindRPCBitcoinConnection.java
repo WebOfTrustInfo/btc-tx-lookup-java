@@ -1,5 +1,25 @@
 package info.weboftrust.btctxlookup.bitcoinconnection;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.google.common.base.Preconditions;
+import info.weboftrust.btctxlookup.*;
+import info.weboftrust.btctxlookup.dto.UTXOSet;
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Hex;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import wf.bitcoin.javabitcoindrpcclient.BitcoinJSONRPCClient;
+import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient;
+import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient.Block;
+import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient.RawTransaction;
+import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient.RawTransaction.In;
+import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient.RawTransaction.Out;
+import wf.bitcoin.javabitcoindrpcclient.GenericRpcException;
+
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.MalformedURLException;
@@ -13,35 +33,12 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.annotation.Nullable;
-
-import org.apache.commons.codec.DecoderException;
-import org.apache.commons.codec.binary.Hex;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.google.common.base.Preconditions;
-
-import info.weboftrust.btctxlookup.*;
-import info.weboftrust.btctxlookup.dto.UTXOSet;
-import wf.bitcoin.javabitcoindrpcclient.BitcoinJSONRPCClient;
-import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient;
-import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient.Block;
-import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient.RawTransaction;
-import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient.RawTransaction.In;
-import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient.RawTransaction.Out;
-import wf.bitcoin.javabitcoindrpcclient.GenericRpcException;
-
 public class BitcoindRPCBitcoinConnection extends AbstractBitcoinConnection implements BitcoinConnection {
 
 	protected static final Pattern patternAsmInputScriptPubKey = Pattern.compile("^[^\\s]+ ([0-9a-fA-F]+)$");
 	protected static final Pattern patternAsmContinuationUri = Pattern.compile("^OP_RETURN ([0-9a-fA-F]+)$");
 	private final static ObjectMapper mapper;
-	private static final Logger log = LogManager.getLogger(BitcoindRPCBitcoinConnection.class);
+	private static final Logger log = LoggerFactory.getLogger(BitcoindRPCBitcoinConnection.class);
 
 	private static final BitcoinClientID CLIENT_ID = BitcoinClientID.BITCOIND;
 
@@ -140,8 +137,8 @@ public class BitcoindRPCBitcoinConnection extends AbstractBitcoinConnection impl
 	@Nullable
 	@Override
 	public ChainAndLocationData lookupChainAndLocationData(ChainAndTxid chainAndTxid) {
-		log.info("Getting chain and location data for txid: {} on chain: {}", chainAndTxid::getTxid,
-				chainAndTxid::getChain);
+		log.info("Getting chain and location data for txid: {} on chain: {}", chainAndTxid.getTxid(),
+				chainAndTxid.getChain());
 
 		BitcoindRpcClient client = getBitcoinRpcClient(chainAndTxid.getChain());
 
@@ -168,8 +165,9 @@ public class BitcoindRPCBitcoinConnection extends AbstractBitcoinConnection impl
 				transactionPosition, chainAndTxid.getTxoIndex());
 
 		log.debug("Resolved chain and location data is: \nBlock Height: {}, TX Position: {}, txoIndex: {}",
-				() -> result.getLocationData().getBlockHeight(),
-				() -> result.getLocationData().getTransactionPosition(), () -> result.getLocationData().getTxoIndex());
+				result.getLocationData().getBlockHeight(),
+				result.getLocationData().getTransactionPosition(),
+				result.getLocationData().getTxoIndex());
 
 		return result;
 	}
@@ -299,7 +297,7 @@ public class BitcoindRPCBitcoinConnection extends AbstractBitcoinConnection impl
 
 	public BigDecimal estimateFees(int targetConfirmInBlocks) {
 		Preconditions.checkState(!legacy);
-		return bitcoindRpcClient.estimateFee(targetConfirmInBlocks);
+		return bitcoindRpcClient.estimateSmartFee(targetConfirmInBlocks).feeRate();
 	}
 
 	public Map<String, Long> findUnspents(String address) throws BitcoinConnectionException {
@@ -311,7 +309,7 @@ public class BitcoindRPCBitcoinConnection extends AbstractBitcoinConnection impl
 		final UTXOSet utxoSet = mapper.convertValue(response, UTXOSet.class);
 
 		if (utxoSet.getUnspents().isEmpty()) {
-			log.info("No UTXO found for the address: {}", address::toString);
+			log.info("No UTXO found for the address: {}", address);
 			return null;
 		}
 
@@ -344,18 +342,18 @@ public class BitcoindRPCBitcoinConnection extends AbstractBitcoinConnection impl
 
 	public boolean isTxConfirmed(String txID, int requiredDepth) {
 		Preconditions.checkState(!legacy);
-		log.debug("Checking confirmations for tx id {} ", () -> txID);
+		log.debug("Checking confirmations for tx id {} ", txID);
 		BitcoindRpcClient.RawTransaction raw;
 
 		try {
 			raw = bitcoindRpcClient.getRawTransaction(txID);
 		} catch (GenericRpcException e) {
-			log.error(e);
+			log.error(e.getMessage(), e);
 			return false;
 		}
 
 		Preconditions.checkNotNull(raw, "Cannot get the TX from bitcoin client");
-		log.trace("RAW TX for txID {} is:\n{}", () -> txID, () -> raw);
+		log.trace("RAW TX for txID {} is:\n{}", txID, raw);
 		int confirms = 0;
 		if (raw.confirmations() != null) {
 			confirms = raw.confirmations();

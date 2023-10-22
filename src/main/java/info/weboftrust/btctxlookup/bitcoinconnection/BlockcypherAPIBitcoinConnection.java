@@ -1,5 +1,15 @@
 package info.weboftrust.btctxlookup.bitcoinconnection;
 
+import com.google.common.base.Preconditions;
+import com.google.gson.*;
+import info.weboftrust.btctxlookup.*;
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.io.IOUtils;
+import org.bitcoinj.script.Script;
+import org.bitcoinj.script.ScriptChunk;
+import org.bitcoinj.script.ScriptException;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -8,18 +18,6 @@ import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.TimeZone;
-
-import org.apache.commons.codec.DecoderException;
-import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.io.IOUtils;
-import org.bitcoinj.script.Script;
-import org.bitcoinj.script.ScriptChunk;
-import org.bitcoinj.script.ScriptException;
-
-import com.google.common.base.Preconditions;
-import com.google.gson.*;
-
-import info.weboftrust.btctxlookup.*;
 
 /**
  * TODO

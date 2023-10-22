@@ -1,12 +1,11 @@
 package info.weboftrust.btctxlookup.bitcoinconnection;
 
-import java.io.IOException;
-
-import org.bitcoinj.core.BlockChain;
-
 import info.weboftrust.btctxlookup.ChainAndLocationData;
 import info.weboftrust.btctxlookup.ChainAndTxid;
 import info.weboftrust.btctxlookup.DidBtcrData;
+import org.bitcoinj.core.BlockChain;
+
+import java.io.IOException;
 
 public class BitcoinjSPVBitcoinConnection extends AbstractBitcoinConnection implements BitcoinConnection {
 

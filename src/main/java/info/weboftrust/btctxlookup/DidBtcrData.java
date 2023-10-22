@@ -1,8 +1,8 @@
 package info.weboftrust.btctxlookup;
 
-import java.net.URI;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import java.net.URI;
 
 public class DidBtcrData {
 

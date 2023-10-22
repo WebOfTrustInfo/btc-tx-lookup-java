@@ -1,5 +1,26 @@
 package info.weboftrust.btctxlookup.bitcoinconnection;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.google.common.base.Preconditions;
+import info.weboftrust.btctxlookup.BitcoinClientID;
+import info.weboftrust.btctxlookup.Chain;
+import info.weboftrust.btctxlookup.ChainAndTxid;
+import info.weboftrust.btctxlookup.DidBtcrData;
+import info.weboftrust.btctxlookup.dto.AddressRelatedTx;
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import wf.bitcoin.javabitcoindrpcclient.BitcoinJSONRPCClient;
+import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient;
+import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient.RawTransaction.In;
+import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient.RawTransaction.Out;
+
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -8,34 +29,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Matcher;
 
-import javax.annotation.Nullable;
-
-import org.apache.commons.codec.DecoderException;
-import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.google.common.base.Preconditions;
-
-import info.weboftrust.btctxlookup.BitcoinClientID;
-import info.weboftrust.btctxlookup.Chain;
-import info.weboftrust.btctxlookup.ChainAndTxid;
-import info.weboftrust.btctxlookup.DidBtcrData;
-import info.weboftrust.btctxlookup.dto.AddressRelatedTx;
-import wf.bitcoin.javabitcoindrpcclient.BitcoinJSONRPCClient;
-import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient;
-import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient.RawTransaction.In;
-import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient.RawTransaction.Out;
-
 public class BTCDRPCBitcoinConnection extends BitcoindRPCBitcoinConnection {
 
 	private final static ObjectMapper mapper;
-	private static final Logger log = LogManager.getLogger(BTCDRPCBitcoinConnection.class);
+	private static final Logger log = LoggerFactory.getLogger(BTCDRPCBitcoinConnection.class);
 
 	private static final int DEFAULT_COUNT = 100;
 	private static final int DEFAULT_SKIP = 0;
@@ -274,7 +271,7 @@ public class BTCDRPCBitcoinConnection extends BitcoindRPCBitcoinConnection {
 		log.info("Request received for finding UTXOs. \nAddress: {}, skip {}, count {}, reverse {}", address, skip,
 				count, reverse);
 		List<AddressRelatedTx> addRelTxs = searchRawTransactions(address, skip, count, 1, reverse, null);
-		log.debug("{} TX found with for the address {}", addRelTxs::size, () -> address);
+		log.debug("{} TX found with for the address {}", addRelTxs.size(), address);
 		List<String> txins = new ArrayList<>();
 		Map<String, Long> txouts = new LinkedHashMap<>();
 

@@ -1,11 +1,11 @@
 package info.weboftrust.btctxlookup.bitcoinconnection;
 
-import java.io.IOException;
-
 import info.weboftrust.btctxlookup.Chain;
 import info.weboftrust.btctxlookup.ChainAndLocationData;
 import info.weboftrust.btctxlookup.ChainAndTxid;
 import info.weboftrust.btctxlookup.DidBtcrData;
+
+import java.io.IOException;
 
 public interface BitcoinConnection {
 
